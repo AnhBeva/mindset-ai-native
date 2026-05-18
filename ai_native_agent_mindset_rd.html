@@ -1,0 +1,513 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Khi AI biết code, nhân sự R&D còn phải giỏi điều gì?</title>
+  <meta name="description" content="Bài chia sẻ về tư duy AI-native Agent dành cho nhân sự R&D: đặc tả, kiến trúc, kiểm chứng và cách dùng AI như lực lượng thực thi có kiểm soát.">
+  <style>
+    :root {
+      --bg: #f5f5f7;
+      --paper: #ffffff;
+      --ink: #1d1d1f;
+      --muted: #6e6e73;
+      --line: rgba(29, 29, 31, 0.12);
+      --soft: rgba(255, 255, 255, 0.72);
+      --blue: #0071e3;
+      --green: #21a67a;
+      --amber: #b86e00;
+      --radius: 22px;
+      --shadow: 0 24px 70px rgba(0, 0, 0, 0.10);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 18% 0%, rgba(0, 113, 227, 0.11), transparent 28rem),
+        radial-gradient(circle at 88% 8%, rgba(33, 166, 122, 0.10), transparent 28rem),
+        var(--bg);
+      letter-spacing: 0;
+    }
+
+    img {
+      display: block;
+      max-width: 100%;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      backdrop-filter: blur(22px);
+      -webkit-backdrop-filter: blur(22px);
+      background: rgba(245, 245, 247, 0.74);
+      border-bottom: 1px solid rgba(29, 29, 31, 0.08);
+    }
+
+    .nav-inner {
+      width: min(1120px, calc(100% - 40px));
+      margin: 0 auto;
+      min-height: 58px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .brand {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--ink);
+      white-space: nowrap;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 20px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+    }
+
+    .hero {
+      min-height: calc(100svh - 58px);
+      display: grid;
+      align-items: end;
+      padding: 38px 0 74px;
+    }
+
+    .hero-wrap {
+      width: min(1180px, calc(100% - 40px));
+      margin: 0 auto;
+    }
+
+    .hero-media {
+      position: relative;
+      overflow: hidden;
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      background: #e8e8ed;
+      min-height: 420px;
+    }
+
+    .hero-media img {
+      width: 100%;
+      height: min(62svh, 650px);
+      min-height: 420px;
+      object-fit: cover;
+    }
+
+    .hero-copy {
+      position: absolute;
+      inset: auto 0 0;
+      padding: clamp(28px, 5vw, 64px);
+      background: linear-gradient(to top, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.72), transparent);
+    }
+
+    .eyebrow {
+      margin: 0 0 12px;
+      color: var(--blue);
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: 0;
+    }
+
+    h1 {
+      margin: 0;
+      max-width: 880px;
+      font-size: clamp(42px, 7vw, 88px);
+      line-height: 0.96;
+      letter-spacing: 0;
+    }
+
+    .lead {
+      max-width: 720px;
+      margin: 22px 0 0;
+      font-size: clamp(19px, 2.4vw, 27px);
+      line-height: 1.32;
+      color: #333336;
+      font-weight: 520;
+    }
+
+    .content {
+      width: min(860px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 34px 0 96px;
+    }
+
+    .section {
+      margin: 0 0 56px;
+    }
+
+    .section.wide {
+      width: min(1120px, calc(100vw - 40px));
+      margin-left: 50%;
+      transform: translateX(-50%);
+    }
+
+    h2 {
+      margin: 0 0 18px;
+      font-size: clamp(30px, 4.4vw, 54px);
+      line-height: 1.04;
+      letter-spacing: 0;
+    }
+
+    h3 {
+      margin: 34px 0 12px;
+      font-size: 24px;
+      line-height: 1.18;
+      letter-spacing: 0;
+    }
+
+    p {
+      margin: 0 0 18px;
+      font-size: 19px;
+      line-height: 1.72;
+      color: #303033;
+    }
+
+    .big {
+      font-size: clamp(24px, 3.2vw, 38px);
+      line-height: 1.22;
+      font-weight: 700;
+      color: var(--ink);
+      margin: 0 0 28px;
+    }
+
+    blockquote {
+      margin: 34px 0;
+      padding: 4px 0 4px 24px;
+      border-left: 4px solid var(--blue);
+      color: var(--ink);
+      font-size: clamp(24px, 3.4vw, 40px);
+      line-height: 1.2;
+      font-weight: 760;
+    }
+
+    blockquote p {
+      font-size: inherit;
+      line-height: inherit;
+      color: inherit;
+      margin: 0;
+    }
+
+    .media-card {
+      overflow: hidden;
+      border-radius: 26px;
+      box-shadow: var(--shadow);
+      background: var(--paper);
+      border: 1px solid rgba(29, 29, 31, 0.08);
+    }
+
+    .media-card img {
+      width: 100%;
+      aspect-ratio: 16 / 8.5;
+      object-fit: cover;
+    }
+
+    .caption {
+      margin: 0;
+      padding: 14px 18px 16px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 26px 0 4px;
+    }
+
+    .pill {
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.72);
+      color: #2f2f32;
+      padding: 9px 13px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin: 26px 0;
+    }
+
+    .tile {
+      background: rgba(255, 255, 255, 0.78);
+      border: 1px solid rgba(29, 29, 31, 0.08);
+      border-radius: var(--radius);
+      padding: 22px;
+      min-height: 190px;
+      box-shadow: 0 12px 34px rgba(0, 0, 0, 0.05);
+    }
+
+    .tile strong {
+      display: block;
+      font-size: 20px;
+      margin-bottom: 10px;
+    }
+
+    .tile span {
+      display: block;
+      color: var(--muted);
+      line-height: 1.55;
+      font-size: 15px;
+    }
+
+    .quote-band {
+      width: min(1120px, calc(100vw - 40px));
+      margin-left: 50%;
+      transform: translateX(-50%);
+      padding: clamp(34px, 6vw, 68px);
+      border-radius: 30px;
+      background: linear-gradient(135deg, #1d1d1f, #303034);
+      color: white;
+      box-shadow: var(--shadow);
+    }
+
+    .quote-band p {
+      color: rgba(255, 255, 255, 0.86);
+    }
+
+    .quote-band .big {
+      color: white;
+      max-width: 900px;
+    }
+
+    ul, ol {
+      margin: 0 0 22px;
+      padding-left: 24px;
+      color: #303033;
+      font-size: 19px;
+      line-height: 1.68;
+    }
+
+    li {
+      margin: 8px 0;
+    }
+
+    .dod {
+      background: #111114;
+      color: #f5f5f7;
+      border-radius: 22px;
+      padding: 24px;
+      overflow-x: auto;
+      box-shadow: var(--shadow);
+    }
+
+    pre {
+      margin: 0;
+      white-space: pre-wrap;
+      font: 15px/1.62 "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+    }
+
+    .closing {
+      padding: clamp(34px, 6vw, 70px) 0 86px;
+      background: #ffffff;
+      border-top: 1px solid rgba(29, 29, 31, 0.08);
+    }
+
+    .closing-inner {
+      width: min(900px, calc(100% - 40px));
+      margin: 0 auto;
+    }
+
+    .closing .big {
+      font-size: clamp(28px, 4.4vw, 58px);
+    }
+
+    @media (max-width: 760px) {
+      .nav-links {
+        display: none;
+      }
+
+      .hero {
+        padding-top: 18px;
+      }
+
+      .hero-media,
+      .hero-media img {
+        min-height: 560px;
+      }
+
+      .hero-media img {
+        object-position: center top;
+      }
+
+      .hero-copy {
+        padding: 26px;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      p, ul, ol {
+        font-size: 17px;
+        line-height: 1.68;
+      }
+
+      .media-card img {
+        aspect-ratio: 4 / 3;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav" aria-label="Điều hướng nội dung">
+    <div class="nav-inner">
+      <div class="brand">AI-Native R&D Mindset</div>
+      <div class="nav-links">
+        <a href="#van-de">Vấn đề</a>
+        <a href="#ba-nang-luc">Ba năng lực</a>
+        <a href="#thuc-hanh">Thực hành</a>
+      </div>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="hero-wrap">
+      <div class="hero-media">
+        <img src="assets/ai-native-rd-hero.png" alt="Kỹ sư R&D điều phối nhiều luồng AI Agent trong một phòng lab hiện đại">
+        <div class="hero-copy">
+          <p class="eyebrow">Bài chia sẻ dành cho nhân sự R&D</p>
+          <h1>Khi AI biết code, chúng ta còn phải giỏi điều gì?</h1>
+          <p class="lead">AI Agent không làm vai trò kỹ thuật biến mất. Nó buộc vai trò ấy dịch chuyển: từ người viết từng mảnh code sang người thiết kế hệ thống thực thi có kiểm chứng.</p>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="content">
+    <section class="section" id="van-de">
+      <p class="big">Có một nghịch lý đang đến rất nhanh: code trở nên rẻ hơn, nhưng hệ thống đúng vẫn rất đắt.</p>
+      <p>Một AI Agent có thể đọc project, sửa file, tạo test, viết tài liệu, chạy lệnh, nhìn log, rồi tự lặp lại cho đến khi mọi thứ có vẻ ổn. Điều đó hấp dẫn. Nhưng nó cũng đặt ra một câu hỏi khó chịu: nếu AI đã viết code nhanh hơn, giá trị thật sự của nhân sự R&D còn nằm ở đâu?</p>
+      <p>Câu trả lời không phải là gõ phím nhanh hơn AI. Câu trả lời là nâng vai trò của mình lên: định nghĩa đúng vấn đề, thiết kế đúng hệ thống, đặt đúng ràng buộc, kiểm chứng đúng kết quả, và dùng AI như một lực lượng thực thi rất mạnh nhưng cần được dẫn dắt.</p>
+      <blockquote><p>AI làm nhanh cả việc đúng lẫn việc sai.</p></blockquote>
+      <p>Nếu yêu cầu mơ hồ, AI có thể sinh ra rất nhiều code mơ hồ. Nếu kiến trúc không rõ, AI có thể làm hệ thống rối nhanh hơn. Nếu không có tiêu chí kiểm chứng, chúng ta rất dễ nhầm giữa “trông có vẻ đúng” và “đúng thật”.</p>
+    </section>
+
+    <section class="section wide" id="ba-nang-luc">
+      <div class="media-card">
+        <img src="assets/spec-architecture-evaluation.png" alt="Dòng chảy từ đặc tả, kiến trúc đến kiểm chứng">
+        <p class="caption">Ba năng lực lõi trong thời AI-native: biến yêu cầu mơ hồ thành đặc tả rõ, chia hệ thống đúng, và chứng minh kết quả bằng kiểm chứng.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Ba năng lực lõi</h2>
+      <div class="grid">
+        <div class="tile">
+          <strong>Đặc tả</strong>
+          <span>Làm rõ mục tiêu, đầu vào, đầu ra, điều kiện lỗi, ràng buộc và tiêu chí hoàn thành trước khi giao việc cho AI hoặc con người.</span>
+        </div>
+        <div class="tile">
+          <strong>Kiến trúc</strong>
+          <span>Chia hệ thống thành module, boundary, interface, state, error flow và ownership rõ để AI thực thi trong đường ray đúng.</span>
+        </div>
+        <div class="tile">
+          <strong>Kiểm chứng</strong>
+          <span>Đòi hỏi bằng chứng: test, log, benchmark, trace, hardware evidence hoặc tiêu chí đo để biết kết quả đúng thật.</span>
+        </div>
+      </div>
+      <p>Một yêu cầu như “bật đèn phòng khách” nghe rất đơn giản. Nhưng hệ thống thật phải đi qua nhận diện giọng nói, hiểu ý định, tìm phòng, tìm thiết bị, xử lý nhiều thiết bị, kiểm tra quyền, gửi lệnh, nhận phản hồi, xác nhận trạng thái và phản hồi lại người dùng. Kỹ sư giỏi là người nhìn thấy toàn chuỗi đó, không chỉ một function.</p>
+      <p>Khi giao việc cho AI, khác biệt không nằm ở việc viết prompt dài. Khác biệt nằm ở chất lượng tư duy: mục tiêu rõ, scope rõ, ràng buộc rõ, Definition of Done rõ và test bắt buộc rõ.</p>
+    </section>
+
+    <section class="section quote-band">
+      <p class="big">AI Agent giống một nhân sự junior có tốc độ cực cao: đọc nhanh, viết nhanh, không mệt, nhưng vẫn cần người senior định hướng, giới hạn, kiểm chứng và chịu trách nhiệm cuối cùng.</p>
+      <p>Vì vậy, câu hỏi trước khi dùng AI không phải là “AI có làm được không?”. Câu hỏi đúng hơn là: “Ta đã đủ rõ để AI làm đúng chưa?”.</p>
+    </section>
+
+    <section class="section">
+      <h2>Đúng vấn đề trước, rồi mới đúng code</h2>
+      <p>Trong môi trường R&D, chúng ta hay muốn bắt tay vào làm nhanh. Có task là mở IDE. Có bug là nhảy vào code. Có yêu cầu mới là nghĩ ngay tới API, database, UI hoặc driver.</p>
+      <p>Nhưng trong thời AI Agent, đặc tả kém là nguồn gốc của rất nhiều lãng phí. Một yêu cầu như “làm tính năng điều khiển thiết bị” gần như chưa đủ để thực thi an toàn. Nó thiếu mục tiêu, thiếu đầu vào, thiếu đầu ra, thiếu điều kiện lỗi, thiếu ràng buộc và thiếu tiêu chí hoàn thành.</p>
+      <div class="pill-row" aria-label="Các câu hỏi đặc tả">
+        <span class="pill">Mục tiêu thật là gì?</span>
+        <span class="pill">Source of truth ở đâu?</span>
+        <span class="pill">Case lỗi nào bắt buộc?</span>
+        <span class="pill">Không được thay đổi gì?</span>
+        <span class="pill">Done được đo bằng gì?</span>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Software và firmware đều phải nâng cấp</h2>
+      <p>Với software, năng lực thiết kế API và tool trở nên quan trọng hơn. API không chỉ dành cho con người nữa. Nó còn là “tay chân” của AI Agent. Tool mơ hồ như <code>control_device(name, value)</code> rất tiện nhưng dễ bị dùng sai. Tool rõ hơn như <code>set_device_power(device_id, power_state)</code> hoặc <code>get_device_current_state(device_id)</code> giảm nhập nhằng và giảm rủi ro.</p>
+      <p>Với firmware, yêu cầu còn khắt khe hơn. Firmware chạm vào điện áp, dòng điện, relay, motor, nhiệt độ, pin, sóng không dây, bus truyền thông, watchdog, flash, RAM và timing. AI có thể sinh driver mẫu, nhưng AI không đứng cạnh thiết bị thật để nghe relay đóng, đo dòng, nhìn oscilloscope, hay quan sát lỗi chỉ xảy ra sau 12 giờ chạy liên tục.</p>
+      <p>Firmware Engineer dùng AI tốt không phải là người copy code AI vào MCU. Đó là người biết yêu cầu state machine rõ, không dùng dynamic allocation khi không phù hợp, có timeout, retry policy, watchdog recovery, log nhẹ và test mô phỏng fault.</p>
+    </section>
+
+    <section class="section wide">
+      <div class="media-card">
+        <img src="assets/rd-team-ai-native.png" alt="Đội R&D cùng xem một bản đồ hệ thống AI-native có kiểm chứng">
+        <p class="caption">AI-native không phải câu chuyện của một cá nhân dùng prompt tốt hơn. Đây là năng lực team: context, tool, test, log, review và quy trình cùng trưởng thành.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>5Đ trước mỗi task quan trọng</h2>
+      <p><strong>Đúng vấn đề:</strong> có đang giải đúng pain point không, hay chỉ đang làm theo một yêu cầu chưa được làm rõ?</p>
+      <p><strong>Đúng thiết kế:</strong> module, interface, state, error flow và ownership có hợp lý không?</p>
+      <p><strong>Đúng dữ liệu:</strong> input, output, source of truth và trạng thái xác nhận có rõ không?</p>
+      <p><strong>Đúng điều kiện lỗi:</strong> offline, timeout, packet loss, trùng tên, thiếu quyền, brown-out, retry và rollback đã được tính chưa?</p>
+      <p><strong>Đúng kiểm chứng:</strong> có test, log, benchmark, hardware evidence hoặc tiêu chí đo để chứng minh không?</p>
+    </section>
+
+    <section class="section" id="thuc-hanh">
+      <h2>Definition of Done trước khi code</h2>
+      <p>Một thay đổi nhỏ nhưng tác động lớn là viết Definition of Done trước khi bắt đầu. Đây không phải là thêm thủ tục. Đây là giảm chi phí mơ hồ.</p>
+      <div class="dod">
+        <pre>Task được coi là hoàn thành khi:
+
+1. User có thể bật/tắt thiết bị theo phòng.
+2. Nếu thiết bị offline, hệ thống không báo thành công giả.
+3. Nếu có nhiều thiết bị phù hợp, hệ thống hỏi lại hoặc xử lý theo rule đã định.
+4. Có test cho happy path, offline, timeout, nhiều thiết bị, thiếu quyền.
+5. Có log trace từ user command tới tool call và phản hồi thiết bị.
+6. Không thay đổi public API hiện tại.
+7. Không làm tăng latency trung bình quá 10%.</pre>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>AI sẽ thay thế ai?</h2>
+      <p>AI Agent dễ thay thế những người chỉ làm theo hướng dẫn mơ hồ, không hiểu hệ thống, không kiểm chứng kết quả, không nâng cấp cách làm.</p>
+      <p>Nhưng AI sẽ khuếch đại rất mạnh những người hiểu bản chất bài toán, biết chia hệ thống, biết viết đặc tả, biết review, biết test, biết đo lường, biết thiết kế tool và quy trình, biết chịu trách nhiệm với chất lượng cuối cùng.</p>
+      <p>Khoảng cách không nằm ở việc ai dùng AI nhiều hơn. Khoảng cách nằm ở việc ai dùng AI với tư duy hệ thống tốt hơn.</p>
+    </section>
+  </main>
+
+  <footer class="closing">
+    <div class="closing-inner">
+      <p class="big">Làm nhanh không còn đủ. Phải làm đúng. Làm đúng cũng chưa đủ. Phải chứng minh được là đúng.</p>
+      <p>Trước mỗi task, hãy tự hỏi: tôi đang chỉ làm cho xong task, hay đang thiết kế một cách làm giúp cả hệ thống và cả team tốt hơn?</p>
+      <p>Nếu câu hỏi này xuất hiện thường xuyên hơn trong các cuộc trao đổi kỹ thuật, AI Agent sẽ không còn là mối đe dọa. Nó sẽ trở thành một lực lượng thực thi mạnh, với điều kiện chúng ta đủ rõ ràng, đủ kỷ luật và đủ năng lực để dẫn dắt nó.</p>
+    </div>
+  </footer>
+</body>
+</html>
