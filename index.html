@@ -3,511 +3,828 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Khi AI biết code, nhân sự R&D còn phải giỏi điều gì?</title>
-  <meta name="description" content="Bài chia sẻ về tư duy AI-native Agent dành cho nhân sự R&D: đặc tả, kiến trúc, kiểm chứng và cách dùng AI như lực lượng thực thi có kiểm soát.">
+  <title>AI Native Agent Mindset Cho R&D</title>
+  <meta name="description" content="Nền tảng học tập Lumi-branded về tư duy AI Native Agent cho nhân sự R&D.">
   <style>
     :root {
-      --bg: #f5f5f7;
-      --paper: #ffffff;
-      --ink: #1d1d1f;
-      --muted: #6e6e73;
-      --line: rgba(29, 29, 31, 0.12);
-      --soft: rgba(255, 255, 255, 0.72);
-      --blue: #0071e3;
-      --green: #21a67a;
-      --amber: #b86e00;
-      --radius: 22px;
-      --shadow: 0 24px 70px rgba(0, 0, 0, 0.10);
+      --lumi-green: #008B51;
+      --lumi-green-deep: #006B3F;
+      --lumi-mint: #E6F4EE;
+      --lumi-pale: #F3FAF6;
+      --text: #1F2933;
+      --muted: #4B5563;
+      --line: #DDE5E1;
+      --surface: #FFFFFF;
+      --accent: #F3B23C;
     }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    html {
-      scroll-behavior: smooth;
-    }
-
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
     body {
       margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
-      color: var(--ink);
-      background:
-        radial-gradient(circle at 18% 0%, rgba(0, 113, 227, 0.11), transparent 28rem),
-        radial-gradient(circle at 88% 8%, rgba(33, 166, 122, 0.10), transparent 28rem),
-        var(--bg);
+      font-family: Arial, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background: var(--lumi-pale);
+      line-height: 1.68;
       letter-spacing: 0;
     }
-
-    img {
-      display: block;
-      max-width: 100%;
+    img { max-width: 100%; display: block; }
+    a { color: var(--lumi-green-deep); }
+    .shell {
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+      min-height: 100vh;
     }
-
-    a {
-      color: inherit;
-    }
-
-    .nav {
+    .sidebar {
       position: sticky;
       top: 0;
-      z-index: 10;
-      backdrop-filter: blur(22px);
-      -webkit-backdrop-filter: blur(22px);
-      background: rgba(245, 245, 247, 0.74);
-      border-bottom: 1px solid rgba(29, 29, 31, 0.08);
+      height: 100vh;
+      overflow: auto;
+      padding: 22px 18px;
+      border-right: 1px solid var(--line);
+      background: rgba(255,255,255,.92);
     }
-
-    .nav-inner {
-      width: min(1120px, calc(100% - 40px));
-      margin: 0 auto;
-      min-height: 58px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 24px;
+    .brand-logo {
+      display: block;
+      height: 42px;
+      width: auto;
+      object-fit: contain;
+      margin-bottom: 18px;
     }
-
-    .brand {
+    .platform-label {
+      color: var(--lumi-green-deep);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      margin: 10px 0 4px;
+    }
+    .sidebar h1 {
+      font-size: 22px;
+      line-height: 1.18;
+      margin: 0 0 18px;
+      letter-spacing: 0;
+    }
+    nav {
+      display: grid;
+      gap: 4px;
+      margin-top: 16px;
+    }
+    nav a {
+      padding: 8px 10px;
+      border-radius: 8px;
+      text-decoration: none;
+      color: var(--text);
       font-size: 14px;
       font-weight: 700;
-      color: var(--ink);
-      white-space: nowrap;
     }
-
-    .nav-links {
-      display: flex;
-      gap: 20px;
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 600;
+    nav a:hover { background: var(--lumi-mint); color: var(--lumi-green-deep); }
+    main {
+      min-width: 0;
+      padding: 0 0 72px;
     }
-
-    .nav-links a {
-      text-decoration: none;
-    }
-
     .hero {
-      min-height: calc(100svh - 58px);
+      min-height: 88vh;
       display: grid;
       align-items: end;
-      padding: 38px 0 74px;
+      padding: 48px clamp(22px, 5vw, 72px);
+      background:
+        linear-gradient(90deg, rgba(255,255,255,.98) 0%, rgba(255,255,255,.86) 46%, rgba(255,255,255,.42) 100%),
+        url('assets/ai-native-rd-hero.png') center/cover no-repeat;
+      border-bottom: 1px solid var(--line);
     }
-
-    .hero-wrap {
-      width: min(1180px, calc(100% - 40px));
-      margin: 0 auto;
-    }
-
-    .hero-media {
-      position: relative;
-      overflow: hidden;
-      border-radius: 28px;
-      box-shadow: var(--shadow);
-      background: #e8e8ed;
-      min-height: 420px;
-    }
-
-    .hero-media img {
-      width: 100%;
-      height: min(62svh, 650px);
-      min-height: 420px;
-      object-fit: cover;
-    }
-
-    .hero-copy {
-      position: absolute;
-      inset: auto 0 0;
-      padding: clamp(28px, 5vw, 64px);
-      background: linear-gradient(to top, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.72), transparent);
-    }
-
-    .eyebrow {
-      margin: 0 0 12px;
-      color: var(--blue);
-      font-size: 14px;
-      font-weight: 800;
-      letter-spacing: 0;
-    }
-
-    h1 {
+    .hero-inner { max-width: 900px; }
+    .eyebrow { color: var(--lumi-green); font-weight: 800; margin: 0 0 12px; }
+    .hero h2 {
       margin: 0;
-      max-width: 880px;
-      font-size: clamp(42px, 7vw, 88px);
-      line-height: 0.96;
+      font-size: clamp(38px, 6vw, 78px);
+      line-height: 1.02;
       letter-spacing: 0;
+      max-width: 920px;
     }
-
     .lead {
-      max-width: 720px;
+      max-width: 760px;
+      font-size: clamp(18px, 2vw, 24px);
+      color: var(--muted);
       margin: 22px 0 0;
-      font-size: clamp(19px, 2.4vw, 27px);
-      line-height: 1.32;
-      color: #333336;
-      font-weight: 520;
     }
-
-    .content {
-      width: min(860px, calc(100% - 40px));
-      margin: 0 auto;
-      padding: 34px 0 96px;
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 30px;
+      max-width: 760px;
     }
-
-    .section {
-      margin: 0 0 56px;
+    .stat {
+      background: rgba(255,255,255,.86);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
     }
-
-    .section.wide {
-      width: min(1120px, calc(100vw - 40px));
-      margin-left: 50%;
-      transform: translateX(-50%);
+    .stat strong { display: block; color: var(--lumi-green-deep); font-size: 24px; line-height: 1; }
+    .stat span { color: var(--muted); font-size: 13px; font-weight: 700; }
+    .doc-section {
+      width: min(980px, calc(100% - 44px));
+      margin: 34px auto 0;
+      padding: clamp(24px, 4vw, 44px);
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
     }
-
-    h2 {
-      margin: 0 0 18px;
-      font-size: clamp(30px, 4.4vw, 54px);
-      line-height: 1.04;
-      letter-spacing: 0;
+    .section-label {
+      display: inline-flex;
+      color: var(--lumi-green-deep);
+      background: var(--lumi-mint);
+      border: 1px solid #C9E8D9;
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 800;
+      margin-bottom: 16px;
     }
-
-    h3 {
-      margin: 34px 0 12px;
-      font-size: 24px;
-      line-height: 1.18;
-      letter-spacing: 0;
-    }
-
-    p {
-      margin: 0 0 18px;
-      font-size: 19px;
-      line-height: 1.72;
-      color: #303033;
-    }
-
-    .big {
-      font-size: clamp(24px, 3.2vw, 38px);
-      line-height: 1.22;
-      font-weight: 700;
-      color: var(--ink);
-      margin: 0 0 28px;
-    }
-
+    h1, h2, h3 { line-height: 1.2; letter-spacing: 0; }
+    .doc-section h1 { margin: 0 0 18px; font-size: clamp(30px, 4vw, 46px); }
+    .doc-section h2 { margin-top: 34px; font-size: clamp(24px, 3vw, 34px); }
+    .doc-section h3 { margin-top: 28px; font-size: 22px; }
+    p, li { font-size: 17px; }
     blockquote {
-      margin: 34px 0;
-      padding: 4px 0 4px 24px;
-      border-left: 4px solid var(--blue);
-      color: var(--ink);
-      font-size: clamp(24px, 3.4vw, 40px);
-      line-height: 1.2;
-      font-weight: 760;
+      margin: 22px 0;
+      padding: 16px 18px;
+      border-left: 4px solid var(--lumi-green);
+      background: var(--lumi-mint);
+      font-weight: 700;
     }
-
-    blockquote p {
-      font-size: inherit;
-      line-height: inherit;
-      color: inherit;
-      margin: 0;
-    }
-
-    .media-card {
+    figure {
+      margin: 28px 0;
+      border: 1px solid var(--line);
+      border-radius: 8px;
       overflow: hidden;
-      border-radius: 26px;
-      box-shadow: var(--shadow);
-      background: var(--paper);
-      border: 1px solid rgba(29, 29, 31, 0.08);
+      background: #fff;
     }
-
-    .media-card img {
+    figure img {
       width: 100%;
-      aspect-ratio: 16 / 8.5;
+      aspect-ratio: 16 / 9;
       object-fit: cover;
     }
-
-    .caption {
-      margin: 0;
-      padding: 14px 18px 16px;
+    figcaption {
+      padding: 12px 14px;
       color: var(--muted);
-      font-size: 13px;
-      line-height: 1.45;
+      font-size: 14px;
+      background: #fff;
+      border-top: 1px solid var(--line);
     }
-
-    .pill-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin: 26px 0 4px;
-    }
-
-    .pill {
+    .table-wrap {
+      overflow-x: auto;
+      margin: 22px 0;
       border: 1px solid var(--line);
-      background: rgba(255, 255, 255, 0.72);
-      color: #2f2f32;
-      padding: 9px 13px;
-      border-radius: 999px;
-      font-weight: 700;
+      border-radius: 8px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 680px;
+      background: #fff;
+    }
+    th, td {
+      border-bottom: 1px solid var(--line);
+      padding: 11px 12px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      color: var(--lumi-green-deep);
+      background: var(--lumi-mint);
       font-size: 14px;
     }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 14px;
-      margin: 26px 0;
+    tr:last-child td { border-bottom: 0; }
+    code {
+      background: #EEF6F2;
+      border: 1px solid #D5EADF;
+      border-radius: 6px;
+      padding: 1px 5px;
+      font-size: .92em;
     }
-
-    .tile {
-      background: rgba(255, 255, 255, 0.78);
-      border: 1px solid rgba(29, 29, 31, 0.08);
-      border-radius: var(--radius);
-      padding: 22px;
-      min-height: 190px;
-      box-shadow: 0 12px 34px rgba(0, 0, 0, 0.05);
-    }
-
-    .tile strong {
-      display: block;
-      font-size: 20px;
-      margin-bottom: 10px;
-    }
-
-    .tile span {
-      display: block;
-      color: var(--muted);
-      line-height: 1.55;
-      font-size: 15px;
-    }
-
-    .quote-band {
-      width: min(1120px, calc(100vw - 40px));
-      margin-left: 50%;
-      transform: translateX(-50%);
-      padding: clamp(34px, 6vw, 68px);
-      border-radius: 30px;
-      background: linear-gradient(135deg, #1d1d1f, #303034);
-      color: white;
-      box-shadow: var(--shadow);
-    }
-
-    .quote-band p {
-      color: rgba(255, 255, 255, 0.86);
-    }
-
-    .quote-band .big {
-      color: white;
-      max-width: 900px;
-    }
-
-    ul, ol {
-      margin: 0 0 22px;
-      padding-left: 24px;
-      color: #303033;
-      font-size: 19px;
-      line-height: 1.68;
-    }
-
-    li {
-      margin: 8px 0;
-    }
-
-    .dod {
-      background: #111114;
-      color: #f5f5f7;
-      border-radius: 22px;
-      padding: 24px;
-      overflow-x: auto;
-      box-shadow: var(--shadow);
-    }
-
     pre {
-      margin: 0;
-      white-space: pre-wrap;
-      font: 15px/1.62 "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+      overflow: auto;
+      padding: 16px;
+      border-radius: 8px;
+      background: #14251D;
+      color: #E8FFF2;
     }
-
-    .closing {
-      padding: clamp(34px, 6vw, 70px) 0 86px;
-      background: #ffffff;
-      border-top: 1px solid rgba(29, 29, 31, 0.08);
+    pre code { background: transparent; border: 0; color: inherit; padding: 0; }
+    @media (max-width: 920px) {
+      .shell { display: block; }
+      .sidebar {
+        position: static;
+        height: auto;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+      .brand-logo { height: 34px; }
+      nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .hero { min-height: auto; padding-top: 56px; }
+      .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
-
-    .closing-inner {
-      width: min(900px, calc(100% - 40px));
-      margin: 0 auto;
+    @media (max-width: 560px) {
+      nav { grid-template-columns: 1fr; }
+      .stats { grid-template-columns: 1fr; }
+      .doc-section { width: calc(100% - 24px); padding: 18px; }
+      p, li { font-size: 16px; }
+      table { min-width: 620px; }
     }
-
-    .closing .big {
-      font-size: clamp(28px, 4.4vw, 58px);
-    }
-
-    @media (max-width: 760px) {
-      .nav-links {
-        display: none;
-      }
-
-      .hero {
-        padding-top: 18px;
-      }
-
-      .hero-media,
-      .hero-media img {
-        min-height: 560px;
-      }
-
-      .hero-media img {
-        object-position: center top;
-      }
-
-      .hero-copy {
-        padding: 26px;
-      }
-
-      .grid {
-        grid-template-columns: 1fr;
-      }
-
-      p, ul, ol {
-        font-size: 17px;
-        line-height: 1.68;
-      }
-
-      .media-card img {
-        aspect-ratio: 4 / 3;
-      }
+    @media print {
+      .sidebar { display: none; }
+      .shell { display: block; }
+      .hero { min-height: auto; background: #fff; }
+      .doc-section { border: 0; width: 100%; page-break-inside: avoid; }
     }
   </style>
 </head>
 <body>
-  <nav class="nav" aria-label="Điều hướng nội dung">
-    <div class="nav-inner">
-      <div class="brand">AI-Native R&D Mindset</div>
-      <div class="nav-links">
-        <a href="#van-de">Vấn đề</a>
-        <a href="#ba-nang-luc">Ba năng lực</a>
-        <a href="#thuc-hanh">Thực hành</a>
-      </div>
-    </div>
-  </nav>
-
-  <header class="hero">
-    <div class="hero-wrap">
-      <div class="hero-media">
-        <img src="assets/ai-native-rd-hero.png" alt="Kỹ sư R&D điều phối nhiều luồng AI Agent trong một phòng lab hiện đại">
-        <div class="hero-copy">
-          <p class="eyebrow">Bài chia sẻ dành cho nhân sự R&D</p>
-          <h1>Khi AI biết code, chúng ta còn phải giỏi điều gì?</h1>
-          <p class="lead">AI Agent không làm vai trò kỹ thuật biến mất. Nó buộc vai trò ấy dịch chuyển: từ người viết từng mảnh code sang người thiết kế hệ thống thực thi có kiểm chứng.</p>
+  <div class="shell">
+    <aside class="sidebar">
+      <img class="brand-logo" src="assets/lumi-logo-2022.png" alt="Lumi">
+      <div class="platform-label">Nền tảng học tập ứng dụng</div>
+      <h1>AI Native Agent Mindset Cho R&D</h1>
+      <nav aria-label="Điều hướng nội dung">
+        <a href="#doc-readme">Tổng quan</a>
+<a href="#doc-ban-do-ai-native-agent-mindset">Bản đồ</a>
+<a href="#doc-giao-trinh-ai-native-agent-mindset">Giáo trình</a>
+<a href="#doc-thuat-ngu-ai-native-agent-mindset">Thuật ngữ</a>
+<a href="#doc-module-01-ai-agent-code-re-hon-he-thong-dung-van-dat">Module 01</a>
+<a href="#doc-module-02-specification-dac-ta-co-the-thuc-thi">Module 02</a>
+<a href="#doc-module-03-context-engineering-giao-viec-cho-ai">Module 03</a>
+<a href="#doc-module-04-architecture-chia-he-thong-dung">Module 04</a>
+<a href="#doc-module-05-tool-api-design-tay-chan-an-toan">Module 05</a>
+<a href="#doc-module-06-evaluation-bang-chung-dung">Module 06</a>
+<a href="#doc-module-07-observability-phan-doan-ky-thuat">Module 07</a>
+<a href="#doc-module-08-operating-system-team-rd-ai-native">Module 08</a>
+<a href="#doc-cong-cu-thuc-hanh-ai-agent">Công cụ</a>
+      </nav>
+    </aside>
+    <main>
+      <section class="hero">
+        <div class="hero-inner">
+          <p class="eyebrow">Lumi R&D Learning Platform</p>
+          <h2>Từ coder sang người thiết kế hệ thống thực thi có kiểm chứng</h2>
+          <p class="lead">Một nền tảng học tập giúp Software Engineer, Firmware Engineer, Tester, BA, PM và Leader dùng AI Agent như lực lượng thực thi mạnh nhưng có đường ray kỹ thuật rõ.</p>
+          <div class="stats">
+            <div class="stat"><strong>8</strong><span>module ứng dụng</span></div>
+            <div class="stat"><strong>24</strong><span>visual học tập</span></div>
+            <div class="stat"><strong>5Đ</strong><span>bộ lọc chất lượng</span></div>
+            <div class="stat"><strong>30</strong><span>ngày nâng cấp team</span></div>
+          </div>
         </div>
-      </div>
-    </div>
-  </header>
+      </section>
+      <section class="doc-section" id="doc-readme"><div class="section-label">Tổng quan</div><h1 id="readme-ai-native-agent-mindset-cho-r-d">AI Native Agent Mindset Cho R&amp;D</h1>
+<p>Nền tảng này giúp nhân sự R&amp;D của Lumi/AND chuyển từ tư duy “làm task và viết code” sang tư duy <strong>thiết kế hệ thống thực thi có kiểm chứng</strong> trong thời AI Agent.</p>
+<h2 id="readme-loi-hua-hoc-tap">Lời hứa học tập</h2>
+<p>Sau khi học, người học có thể:</p>
+<ul>
+<li>- Biến yêu cầu mơ hồ thành đặc tả rõ, có ràng buộc và Definition of Done.</li>
+<li>- Chia hệ thống thành module, interface, state, error flow và ownership đủ rõ để con người lẫn AI cùng thực thi.</li>
+<li>- Thiết kế context, tool/API và phạm vi an toàn khi giao việc cho AI Agent.</li>
+<li>- Review code do AI sinh bằng tiêu chí kỹ thuật thay vì cảm giác.</li>
+<li>- Chứng minh kết quả đúng bằng test, log, trace, benchmark hoặc bằng chứng trên thiết bị thật.</li>
+<li>- Dùng mô hình 5Đ để nâng cấp quy trình làm việc của cả team R&amp;D.</li>
+</ul>
+<h2 id="readme-doi-tuong">Đối tượng</h2>
+<p>Software Engineer, Firmware Engineer, Tester, BA, PM, Leader và các vai trò R&amp;D đang xây sản phẩm công nghệ, smart home, IoT hoặc hệ thống có AI Agent tham gia vào quy trình phát triển.</p>
+<h2 id="readme-cau-truc">Cấu trúc</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Tài liệu</th><th>Vai trò</th></tr></thead>
+<tbody>
+<tr><td><code>ban-do-ai-native-agent-mindset.md</code></td><td>Bản đồ lĩnh vực và các tầng năng lực.</td></tr>
+<tr><td><code>giao-trinh-ai-native-agent-mindset.md</code></td><td>Lộ trình học theo module và mục tiêu ứng dụng.</td></tr>
+<tr><td><code>thuat-ngu-ai-native-agent-mindset.md</code></td><td>Thuật ngữ cốt lõi để team dùng chung ngôn ngữ.</td></tr>
+<tr><td><code>Module-01</code> đến <code>Module-08</code></td><td>Bài học ứng dụng theo tình huống R&amp;D.</td></tr>
+<tr><td><code>cong-cu-thuc-hanh-ai-agent.md</code></td><td>Checklist, template prompt, Definition of Done và review rubric.</td></tr>
+<tr><td><code>build_platform_html.py</code></td><td>Script dựng website tĩnh từ Markdown nguồn.</td></tr>
+<tr><td><code>index.html</code></td><td>Website học tập tĩnh đã build.</td></tr>
+</tbody></table></div>
+<h2 id="readme-build-local">Build local</h2>
+<pre><code>python3 build_platform_html.py</code></pre>
+<p>Sau khi build, mở <code>index.html</code> trực tiếp trong trình duyệt hoặc chạy:</p>
+<pre><code>python3 -m http.server 8000</code></pre>
+<h2 id="readme-nguon">Nguồn</h2>
+<p>Nội dung được xây từ <code>bai_chia_se_ai_native_agent_mindset.md</code> và mở rộng thành nền tảng học tập ứng dụng. Tài liệu nguồn gốc được giữ nguyên.</p></section>
+<section class="doc-section" id="doc-ban-do-ai-native-agent-mindset"><div class="section-label">Bản đồ</div><h1 id="ban-do-ai-native-agent-mindset-ban-do-ai-native-agent-mindset-cho-r-d">Bản đồ AI Native Agent Mindset Cho R&amp;D</h1>
+<h2 id="ban-do-ai-native-agent-mindset-1-linh-vuc-nay-thuc-su-la-gi">1. Lĩnh vực này thực sự là gì?</h2>
+<p>AI Native Agent Mindset là năng lực thiết kế cách con người, AI Agent, codebase, tool, test, log và quy trình cùng tạo ra kết quả kỹ thuật đúng. Trọng tâm không phải là “dùng AI cho nhanh”, mà là biến tốc độ của AI thành năng lực thực thi an toàn, có kiến trúc và có bằng chứng.</p>
+<h2 id="ban-do-ai-native-agent-mindset-2-cac-cau-hoi-cot-loi">2. Các câu hỏi cốt lõi</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Câu hỏi</th><th>Vì sao quan trọng</th><th>Nếu không trả lời được sẽ nhầm gì?</th></tr></thead>
+<tbody>
+<tr><td>Vấn đề thật là gì?</td><td>AI chỉ hữu ích khi mục tiêu đúng.</td><td>Sinh code giải nhầm pain point.</td></tr>
+<tr><td>Ràng buộc nào không được phá?</td><td>R&amp;D thường có legacy, firmware, tài nguyên, safety.</td><td>Tạo PR sạch nhưng làm hệ thống khó vận hành.</td></tr>
+<tr><td>Hệ thống nên chia thế nào?</td><td>AI giỏi làm từng mảnh, nhưng cần mảnh đúng.</td><td>Nhân bản sự rối trong kiến trúc.</td></tr>
+<tr><td>Kết quả đúng được chứng minh bằng gì?</td><td>Cảm giác “trông ổn” không đủ để release.</td><td>Release lỗi không có test, log hoặc rollback.</td></tr>
+<tr><td>AI được phép làm gì và không được làm gì?</td><td>Agent có tốc độ cao nên cần đường ray.</td><td>Tự ý sửa ngoài scope hoặc thay đổi public contract.</td></tr>
+</tbody></table></div>
+<h2 id="ban-do-ai-native-agent-mindset-3-nguyen-tac-phan-chia">3. Nguyên tắc phân chia</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Tầng</th><th>Câu hỏi cốt lõi</th><th>Nhánh/mô hình tiêu biểu</th><th>Ý nghĩa thực tiễn</th></tr></thead>
+<tbody>
+<tr><td>Purpose</td><td>Ta cần tạo giá trị gì?</td><td>Từ coder sang người thiết kế hệ thống thực thi.</td><td>Giữ vai trò con người ở định nghĩa, kiến trúc, kiểm chứng.</td></tr>
+<tr><td>Specification</td><td>Task có đủ rõ để làm đúng chưa?</td><td>Goal, scope, constraint, Definition of Done.</td><td>Giảm mơ hồ trước khi AI sinh code.</td></tr>
+<tr><td>Context</td><td>AI cần biết gì để không đoán mò?</td><td>Context Engineering, file liên quan, coding convention.</td><td>Tăng chất lượng output và giảm sửa lại.</td></tr>
+<tr><td>Architecture</td><td>Hệ thống được chia và nối thế nào?</td><td>Boundary, interface, state, error flow, ownership.</td><td>Giúp AI làm nhanh nhưng không phá thiết kế.</td></tr>
+<tr><td>Tool/API</td><td>AI sẽ hành động qua interface nào?</td><td>Tool rõ intent, enum, permission, confirmed state.</td><td>Giảm gọi nhầm, báo thành công giả, thao tác rủi ro.</td></tr>
+<tr><td>Evaluation</td><td>Bằng chứng đúng là gì?</td><td>Test, log, trace, benchmark, HIL, fault injection.</td><td>Chuyển từ cảm giác sang kiểm chứng.</td></tr>
+<tr><td>Operations</td><td>Team vận hành AI thế nào?</td><td>5Đ, checklist review, approval, rollback.</td><td>Biến cá nhân dùng AI thành năng lực team.</td></tr>
+</tbody></table></div>
+<h2 id="ban-do-ai-native-agent-mindset-4-ban-do-nang-luc">4. Bản đồ năng lực</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Nhánh</th><th>Bản chất</th><th>Dấu hiệu đạt</th><th>Ứng dụng</th></tr></thead>
+<tbody>
+<tr><td>Đặc tả</td><td>Biến mơ hồ thành tiêu chí thực thi.</td><td>Task có mục tiêu, lỗi, ràng buộc, Done.</td><td>Brief cho AI, ticket, PR scope.</td></tr>
+<tr><td>Kiến trúc</td><td>Chia hệ thống theo trách nhiệm và dòng dữ liệu.</td><td>Module, interface, state, log và ownership rõ.</td><td>Review thiết kế trước khi sinh code.</td></tr>
+<tr><td>Kiểm chứng</td><td>Chứng minh hệ thống đúng trong điều kiện thật.</td><td>Có test, log, trace, metric, case lỗi.</td><td>Release, regression, firmware validation.</td></tr>
+<tr><td>Phán đoán</td><td>Chọn phương án phù hợp bối cảnh.</td><td>Biết đánh đổi đơn giản, rủi ro, maintainability.</td><td>Quyết định giữa 5 phương án AI đề xuất.</td></tr>
+<tr><td>Quản trị Agent</td><td>Dùng AI như lực lượng thực thi có kiểm soát.</td><td>Scope, context, approval, rollback, review.</td><td>Tăng tốc mà không mất kiểm soát chất lượng.</td></tr>
+</tbody></table></div>
+<h2 id="ban-do-ai-native-agent-mindset-5-mo-hinh-nho-nhanh-5d">5. Mô hình nhớ nhanh: 5Đ</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>5Đ</th><th>Câu hỏi kiểm tra</th></tr></thead>
+<tbody>
+<tr><td>Đúng vấn đề</td><td>Có đang giải đúng pain point không?</td></tr>
+<tr><td>Đúng thiết kế</td><td>Kiến trúc, module, interface có hợp lý không?</td></tr>
+<tr><td>Đúng dữ liệu</td><td>Input, output, state, source of truth có rõ không?</td></tr>
+<tr><td>Đúng điều kiện lỗi</td><td>Offline, timeout, mất gói, trùng tên, thiếu quyền đã xử lý chưa?</td></tr>
+<tr><td>Đúng kiểm chứng</td><td>Có test, log, benchmark hoặc bằng chứng để chứng minh không?</td></tr>
+</tbody></table></div></section>
+<section class="doc-section" id="doc-giao-trinh-ai-native-agent-mindset"><div class="section-label">Giáo trình</div><h1 id="giao-trinh-ai-native-agent-mindset-giao-trinh-ai-native-agent-mindset-cho-r-d">Giáo trình AI Native Agent Mindset Cho R&amp;D</h1>
+<h2 id="giao-trinh-ai-native-agent-mindset-cau-truc-tong-the">Cấu trúc tổng thể</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Phần</th><th>Module</th><th>Vai trò</th></tr></thead>
+<tbody>
+<tr><td>Định hướng</td><td>01</td><td>Hiểu vì sao code rẻ hơn nhưng hệ thống đúng vẫn đắt.</td></tr>
+<tr><td>Nền tảng thực thi</td><td>02-03</td><td>Viết đặc tả và context để AI làm đúng.</td></tr>
+<tr><td>Thiết kế hệ thống</td><td>04-05</td><td>Chia kiến trúc và tool/API để AI hành động an toàn.</td></tr>
+<tr><td>Kiểm chứng</td><td>06-07</td><td>Review, test, log, trace và phán đoán kỹ thuật.</td></tr>
+<tr><td>Vận hành team</td><td>08</td><td>Biến mindset thành quy trình R&amp;D lặp lại được.</td></tr>
+</tbody></table></div>
+<h2 id="giao-trinh-ai-native-agent-mindset-lo-trinh-theo-muc-tieu">Lộ trình theo mục tiêu</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Mục tiêu người học</th><th>Nên học module nào</th><th>Kết quả mong đợi</th></tr></thead>
+<tbody>
+<tr><td>Muốn giao việc cho AI tốt hơn</td><td>01, 02, 03</td><td>Viết task rõ, giới hạn scope, định nghĩa Done.</td></tr>
+<tr><td>Muốn review code AI sinh</td><td>02, 04, 06</td><td>Đối chiếu yêu cầu, kiến trúc, test, log và rủi ro.</td></tr>
+<tr><td>Muốn thiết kế API/tool cho AI</td><td>04, 05, 07</td><td>Tool ít nhập nhằng, có permission, response và confirmed state.</td></tr>
+<tr><td>Muốn áp dụng cho firmware</td><td>02, 04, 06</td><td>Tính timing, memory, watchdog, fault và HIL trước khi tin code.</td></tr>
+<tr><td>Muốn nâng cấp quy trình team</td><td>06, 07, 08</td><td>Có checklist, rubric, log, rollback và vòng học sau release.</td></tr>
+</tbody></table></div>
+<h2 id="giao-trinh-ai-native-agent-mindset-chuan-dau-ra">Chuẩn đầu ra</h2>
+<p>Người học hoàn thành nền tảng khi có thể tạo một task brief cho AI Agent gồm: mục tiêu, bối cảnh, phạm vi sửa, ràng buộc, Definition of Done, test bắt buộc, log/trace cần có, rủi ro còn lại và người review chịu trách nhiệm.</p></section>
+<section class="doc-section" id="doc-thuat-ngu-ai-native-agent-mindset"><div class="section-label">Thuật ngữ</div><h1 id="thuat-ngu-ai-native-agent-mindset-thuat-ngu-ai-native-agent-mindset">Thuật ngữ AI Native Agent Mindset</h1>
+<div class="table-wrap"><table>
+<thead><tr><th>Thuật ngữ</th><th>Nhóm</th><th>Định nghĩa ngắn</th><th>Bản chất</th><th>Câu hỏi ứng dụng</th></tr></thead>
+<tbody>
+<tr><td>AI Agent</td><td>Nền tảng</td><td>Hệ thống AI có thể lập kế hoạch, đọc file, gọi tool, sửa code, chạy lệnh và lặp lại.</td><td>Một lực lượng thực thi nhanh cần được định hướng và kiểm chứng.</td><td>Agent được phép làm gì trong task này?</td></tr>
+<tr><td>Specification</td><td>Đặc tả</td><td>Mô tả mục tiêu, ràng buộc, đầu vào, đầu ra, lỗi và tiêu chí hoàn thành.</td><td>Biến mơ hồ thành điều có thể thực thi.</td><td>Task này đã đủ rõ để AI không đoán mò chưa?</td></tr>
+<tr><td>Definition of Done</td><td>Đặc tả</td><td>Danh sách điều kiện để coi task hoàn thành.</td><td>Hợp đồng chất lượng trước khi code.</td><td>Bằng chứng nào cho thấy Done thật sự đạt?</td></tr>
+<tr><td>Context Engineering</td><td>Giao việc cho AI</td><td>Thiết kế ngữ cảnh AI cần để hành động đúng.</td><td>Prompt chỉ là phần nổi; context quyết định chất lượng.</td><td>AI cần biết file, convention, ràng buộc và điều cấm nào?</td></tr>
+<tr><td>Architecture Boundary</td><td>Kiến trúc</td><td>Ranh giới trách nhiệm giữa module hoặc tầng hệ thống.</td><td>Giảm coupling và giúp AI sửa đúng chỗ.</td><td>Thay đổi này thuộc module nào và không được lan sang đâu?</td></tr>
+<tr><td>Source of Truth</td><td>Dữ liệu</td><td>Nơi có thẩm quyền cuối cùng về trạng thái hoặc dữ liệu.</td><td>Tránh nhiều bản thật cạnh tranh nhau.</td><td>UI đang tin backend, cache hay thiết bị thật?</td></tr>
+<tr><td>Confirmed State</td><td>Điều khiển thiết bị</td><td>Trạng thái đã được xác nhận bởi nguồn thật, không chỉ lệnh đã gửi.</td><td>Không báo thành công giả.</td><td>Khi nào được nói “đã bật”?</td></tr>
+<tr><td>Evaluation</td><td>Kiểm chứng</td><td>Cách chứng minh kết quả đúng bằng test, log, benchmark hoặc bằng chứng thật.</td><td>Chuyển từ cảm giác sang bằng chứng.</td><td>Test/log nào sẽ bắt lỗi nếu AI làm sai?</td></tr>
+<tr><td>Observability</td><td>Vận hành</td><td>Khả năng nhìn thấy hệ thống đang làm gì qua log, trace, metric.</td><td>Không đo được thì khó debug và cải tiến.</td><td>Lỗi nằm ở intent, tool, device hay response?</td></tr>
+<tr><td>Hardware-in-the-loop</td><td>Firmware</td><td>Kiểm thử có thiết bị thật trong vòng kiểm chứng.</td><td>Mock không thay thế được hành vi vật lý.</td><td>Code này đã chạy trên thiết bị thật chưa?</td></tr>
+<tr><td>Fault Injection</td><td>Kiểm chứng</td><td>Cố ý tạo lỗi như timeout, mất gói, offline, reboot để kiểm tra hệ thống.</td><td>Hệ thống tốt phải biết sai an toàn.</td><td>Ta đã thử tình huống xấu trước release chưa?</td></tr>
+<tr><td>5Đ</td><td>Quy trình</td><td>Đúng vấn đề, đúng thiết kế, đúng dữ liệu, đúng điều kiện lỗi, đúng kiểm chứng.</td><td>Bộ lọc chất lượng trước khi tin một task đã xong.</td><td>Task này thiếu chữ Đ nào?</td></tr>
+</tbody></table></div></section>
+<section class="doc-section" id="doc-module-01-ai-agent-code-re-hon-he-thong-dung-van-dat"><div class="section-label">Module 01</div><h1 id="module-01-ai-agent-code-re-hon-he-thong-dung-van-dat-module-01-ai-agent-lam-code-re-hon-nhung-he-thong-dung-van-dat">Module 01: AI Agent làm code rẻ hơn, nhưng hệ thống đúng vẫn đắt</h1>
+<p><strong>Bài này giúp nhân sự R&amp;D thấy đúng sự dịch chuyển giá trị: từ tự viết từng dòng code sang thiết kế hệ thống thực thi có kiểm chứng.</strong></p>
+<figure><img src="assets/visuals/module-01/01-scenario.png" alt="Kỹ sư R&amp;D đứng trước bảng hệ thống cùng AI Agent"><figcaption>Chú thích: Tình huống mở đầu không phải “AI có viết code được không”, mà là team có biết giao đúng việc và kiểm chứng đúng kết quả không.</figcaption></figure>
+<h2 id="module-01-ai-agent-code-re-hon-he-thong-dung-van-dat-0-van-de-that-trong-r-d">0. Vấn đề thật trong R&amp;D</h2>
+<p>AI Agent có thể tạo controller, service, driver mẫu, unit test và tài liệu rất nhanh. Nhưng nếu yêu cầu mơ hồ, kiến trúc không rõ hoặc thiếu kiểm chứng, AI cũng làm nhanh phần sai.</p>
+<div class="table-wrap"><table>
+<thead><tr><th>Khía cạnh</th><th>Mô tả</th></tr></thead>
+<tbody>
+<tr><td>Quyền hạn</td><td>Người học có thể viết task, review PR, thiết kế API, yêu cầu test.</td></tr>
+<tr><td>Áp lực</td><td>Cần tăng tốc nhưng không được giảm chất lượng sản phẩm.</td></tr>
+<tr><td>Giới hạn</td><td>Legacy code, firmware thật, thiết bị thật, người dùng thật.</td></tr>
+<tr><td>Hậu quả</td><td>Code nhiều hơn nhưng lỗi vào hệ thống nhanh hơn.</td></tr>
+</tbody></table></div>
+<p><strong>Một câu cần nhớ:</strong> Code rẻ hơn, nhưng hệ thống đúng vẫn đắt vì đúng vấn đề, đúng kiến trúc và đúng kiểm chứng vẫn cần phán đoán con người.</p>
+<h2 id="module-01-ai-agent-code-re-hon-he-thong-dung-van-dat-1-boc-tach-ban-chat">1. Bóc tách bản chất</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Lớp phân tích</th><th>Câu hỏi kiểm tra</th><th>Nhận định</th></tr></thead>
+<tbody>
+<tr><td>Triệu chứng</td><td>AI sinh nhiều code nhưng team vẫn mất thời gian sửa.</td><td>Tốc độ tạo output tăng nhanh hơn năng lực kiểm soát chất lượng.</td></tr>
+<tr><td>Nguyên nhân gần</td><td>Task thiếu mục tiêu, constraint và test.</td><td>AI phải đoán.</td></tr>
+<tr><td>Nguyên nhân gốc</td><td>Team coi AI như máy viết code, không phải lực lượng thực thi cần quản trị.</td><td>Thiếu hệ thống giao việc và kiểm chứng.</td></tr>
+<tr><td>Hệ thống</td><td>Review bằng cảm giác, log thiếu, Done không rõ.</td><td>Lỗi lọt qua vì không có bằng chứng.</td></tr>
+</tbody></table></div>
+<figure><img src="assets/visuals/module-01/02-mechanism.png" alt="Cơ chế code rẻ nhưng quyết định kỹ thuật vẫn đắt"><figcaption>Chú thích: Khi chi phí sinh code giảm, nút thắt chuyển sang định nghĩa vấn đề, thiết kế hệ thống và kiểm chứng.</figcaption></figure>
+<h2 id="module-01-ai-agent-code-re-hon-he-thong-dung-van-dat-2-nguyen-ly-cot-loi">2. Nguyên lý cốt lõi</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Nguyên lý</th><th>Giải thích</th><th>Dễ sai khi</th></tr></thead>
+<tbody>
+<tr><td>AI khuếch đại hệ thống hiện có</td><td>Quy trình rõ thì AI tăng tốc; quy trình mơ hồ thì AI khuếch đại mơ hồ.</td><td>Dùng AI để bỏ qua phân tích.</td></tr>
+<tr><td>Output không bằng outcome</td><td>PR sạch chưa chắc giải đúng vấn đề.</td><td>Đánh giá theo số dòng code hoặc tốc độ.</td></tr>
+<tr><td>Con người giữ trách nhiệm cuối</td><td>AI có thể làm, nhưng không chịu trách nhiệm sản phẩm.</td><td>Merge vì “AI đã test rồi”.</td></tr>
+</tbody></table></div>
+<h2 id="module-01-ai-agent-code-re-hon-he-thong-dung-van-dat-3-mo-hinh-tu-duy">3. Mô hình tư duy</h2>
+<pre><code>Mục tiêu sản phẩm → Đặc tả → Kiến trúc → AI thực thi → Kiểm chứng → Release → Học lại quy trình</code></pre>
+<h2 id="module-01-ai-agent-code-re-hon-he-thong-dung-van-dat-4-quy-trinh-hanh-dong">4. Quy trình hành động</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Bước</th><th>Việc cần làm</th><th>Đầu ra</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>Viết mục tiêu sản phẩm trước code.</td><td>Outcome rõ.</td></tr>
+<tr><td>2</td><td>Nêu ràng buộc và điều không được phá.</td><td>Scope an toàn.</td></tr>
+<tr><td>3</td><td>Chỉ định bằng chứng đúng.</td><td>Test/log/benchmark.</td></tr>
+<tr><td>4</td><td>Review bằng 5Đ.</td><td>Quyết định merge có lý do.</td></tr>
+</tbody></table></div>
+<figure><img src="assets/visuals/module-01/03-workflow-practice.png" alt="Workflow chuyển từ task sang hệ thống thực thi"><figcaption>Chú thích: Giá trị mới của kỹ sư nằm ở việc thiết kế vòng lặp giúp cả người và AI cùng làm đúng nhanh hơn.</figcaption></figure>
+<h2 id="module-01-ai-agent-code-re-hon-he-thong-dung-van-dat-5-case-thuc-chien">5. Case thực chiến</h2>
+<p>Team giao AI “tối ưu luồng điều khiển đèn”. AI sửa nhanh, test pass, nhưng sau release có thiết bị offline vẫn báo thành công. Vấn đề thật không phải thiếu code tối ưu; vấn đề là task không định nghĩa confirmed state, error path và log trace.</p>
+<h2 id="module-01-ai-agent-code-re-hon-he-thong-dung-van-dat-6-thuc-hanh-co-phan-hoi">6. Thực hành có phản hồi</h2>
+<p>Viết lại một task gần đây theo cấu trúc: mục tiêu, bối cảnh, scope, ràng buộc, Definition of Done, test bắt buộc, rủi ro còn lại.</p>
+<div class="table-wrap"><table>
+<thead><tr><th>Tiêu chí</th><th>Chưa đạt</th><th>Đạt</th><th>Xuất sắc</th></tr></thead>
+<tbody>
+<tr><td>Mục tiêu</td><td>Chỉ nêu việc code.</td><td>Có outcome.</td><td>Có outcome và tiêu chí đo.</td></tr>
+<tr><td>Scope</td><td>Mơ hồ.</td><td>Có phạm vi sửa.</td><td>Có cả điều không được đổi.</td></tr>
+<tr><td>Kiểm chứng</td><td>Không rõ.</td><td>Có test.</td><td>Có test, log và rollback.</td></tr>
+</tbody></table></div>
+<h2 id="module-01-ai-agent-code-re-hon-he-thong-dung-van-dat-7-cong-cu-mang-ve">7. Công cụ mang về</h2>
+<p>Dùng checklist 5Đ trong <code>cong-cu-thuc-hanh-ai-agent.md</code> trước khi giao AI làm task quan trọng.</p></section>
+<section class="doc-section" id="doc-module-02-specification-dac-ta-co-the-thuc-thi"><div class="section-label">Module 02</div><h1 id="module-02-specification-dac-ta-co-the-thuc-thi-module-02-specification-bien-yeu-cau-mo-ho-thanh-dac-ta-co-the-thuc-thi">Module 02: Specification - biến yêu cầu mơ hồ thành đặc tả có thể thực thi</h1>
+<p><strong>Bài này giúp người học viết yêu cầu đủ rõ để AI, kỹ sư, tester và reviewer cùng hiểu một việc giống nhau.</strong></p>
+<figure><img src="assets/visuals/module-02/01-scenario.png" alt="Nhóm R&amp;D làm rõ yêu cầu trước khi giao AI Agent"><figcaption>Chú thích: Đặc tả tốt bắt đầu trước IDE: team phải thống nhất mục tiêu, ràng buộc, lỗi và tiêu chí Done.</figcaption></figure>
+<h2 id="module-02-specification-dac-ta-co-the-thuc-thi-0-van-de-that">0. Vấn đề thật</h2>
+<p>“Làm tính năng điều khiển thiết bị” nghe rõ nhưng chưa đủ để thực thi. Nó thiếu user outcome, input/output, source of truth, lỗi, permission, rollback và test.</p>
+<p><strong>Một câu cần nhớ:</strong> Đặc tả không phải giấy tờ; đặc tả là cách giảm đoán mò trước khi hệ thống sinh code.</p>
+<h2 id="module-02-specification-dac-ta-co-the-thuc-thi-1-boc-tach-ban-chat">1. Bóc tách bản chất</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Lớp</th><th>Câu hỏi</th><th>Ý nghĩa</th></tr></thead>
+<tbody>
+<tr><td>Mục tiêu</td><td>Người dùng cần kết quả gì?</td><td>Tránh làm đúng task nhưng sai nhu cầu.</td></tr>
+<tr><td>Đầu vào/đầu ra</td><td>Hệ thống nhận gì và trả gì?</td><td>Tránh interface mơ hồ.</td></tr>
+<tr><td>Lỗi</td><td>Điều gì có thể sai?</td><td>Tránh happy path only.</td></tr>
+<tr><td>Ràng buộc</td><td>Không được phá gì?</td><td>Bảo vệ kiến trúc và sản phẩm cũ.</td></tr>
+<tr><td>Done</td><td>Bằng chứng hoàn thành là gì?</td><td>Giúp AI, reviewer, tester cùng chấm.</td></tr>
+</tbody></table></div>
+<figure><img src="assets/visuals/module-02/02-mechanism.png" alt="Các lớp của một đặc tả kỹ thuật rõ ràng"><figcaption>Chú thích: Đặc tả tốt là hợp đồng giữa mục tiêu, dữ liệu, lỗi, ràng buộc và bằng chứng.</figcaption></figure>
+<h2 id="module-02-specification-dac-ta-co-the-thuc-thi-2-nguyen-ly-cot-loi">2. Nguyên lý cốt lõi</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Nguyên lý</th><th>Giải thích</th><th>Giới hạn</th></tr></thead>
+<tbody>
+<tr><td>Rõ trước khi nhanh</td><td>Task càng rõ, AI càng đáng tin.</td><td>Không cần viết dài nếu task nhỏ.</td></tr>
+<tr><td>Error path là một phần yêu cầu</td><td>Offline, timeout, thiếu quyền là hành vi sản phẩm.</td><td>Không thể phủ mọi lỗi, phải chọn lỗi quan trọng.</td></tr>
+<tr><td>Done phải đo được</td><td>“Chạy ổn” không phải tiêu chí.</td><td>Với thử nghiệm sớm, có thể dùng bằng chứng nhẹ hơn.</td></tr>
+</tbody></table></div>
+<h2 id="module-02-specification-dac-ta-co-the-thuc-thi-3-mo-hinh-tu-duy">3. Mô hình tư duy</h2>
+<pre><code>Goal → Actor → Input → Output → Source of Truth → Error Cases → Constraints → Definition of Done</code></pre>
+<h2 id="module-02-specification-dac-ta-co-the-thuc-thi-4-quy-trinh-hanh-dong">4. Quy trình hành động</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Bước</th><th>Việc cần làm</th><th>Đầu ra</th><th>Lỗi thường gặp</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>Viết outcome người dùng.</td><td>Câu mục tiêu.</td><td>Viết “tạo API” thay vì kết quả sản phẩm.</td></tr>
+<tr><td>2</td><td>Liệt kê luồng chính và lỗi chính.</td><td>Happy/error paths.</td><td>Bỏ qua timeout/offline.</td></tr>
+<tr><td>3</td><td>Ghi constraint.</td><td>Điều không được phá.</td><td>Để AI tự refactor rộng.</td></tr>
+<tr><td>4</td><td>Viết Done.</td><td>Tiêu chí merge.</td><td>Done không có test/log.</td></tr>
+</tbody></table></div>
+<figure><img src="assets/visuals/module-02/03-workflow-practice.png" alt="Bài tập viết Definition of Done trước khi code"><figcaption>Chú thích: Definition of Done là điểm neo để AI thực thi và con người review cùng một chuẩn.</figcaption></figure>
+<h2 id="module-02-specification-dac-ta-co-the-thuc-thi-5-case-thuc-chien">5. Case thực chiến</h2>
+<p>Yêu cầu yếu: “Làm bật đèn phòng khách.”</p>
+<p>Yêu cầu tốt hơn: “Cho phép người dùng bật/tắt đèn theo phòng. Nếu thiết bị offline thì không báo thành công. Nếu có nhiều đèn phù hợp thì hỏi lại hoặc dùng rule nhóm. UI chỉ báo thành công khi có confirmed state. Có test cho happy path, offline, timeout, nhiều thiết bị, thiếu quyền.”</p>
+<h2 id="module-02-specification-dac-ta-co-the-thuc-thi-6-thuc-hanh">6. Thực hành</h2>
+<p>Chọn một yêu cầu mơ hồ trong backlog và viết lại thành đặc tả 8 phần. Reviewer chỉ được chấp nhận khi có ít nhất 3 error case và 1 tiêu chí kiểm chứng rõ.</p>
+<h2 id="module-02-specification-dac-ta-co-the-thuc-thi-7-cong-cu-mang-ve">7. Công cụ mang về</h2>
+<p>Mẫu Definition of Done trong <code>cong-cu-thuc-hanh-ai-agent.md</code>.</p></section>
+<section class="doc-section" id="doc-module-03-context-engineering-giao-viec-cho-ai"><div class="section-label">Module 03</div><h1 id="module-03-context-engineering-giao-viec-cho-ai-module-03-context-engineering-giao-viec-cho-ai-nhu-mot-luc-luong-thuc-thi">Module 03: Context Engineering - giao việc cho AI như một lực lượng thực thi</h1>
+<p><strong>Bài này giúp người học đưa đúng ngữ cảnh để AI Agent không đoán sai, sửa quá rộng hoặc bỏ qua ràng buộc quan trọng.</strong></p>
+<figure><img src="assets/visuals/module-03/01-scenario.png" alt="Kỹ sư chuẩn bị context trước khi giao AI Agent sửa code"><figcaption>Chú thích: Prompt tốt không chỉ là câu lệnh; nó là bối cảnh đủ để AI hiểu hệ thống trước khi hành động.</figcaption></figure>
+<h2 id="module-03-context-engineering-giao-viec-cho-ai-0-van-de-that">0. Vấn đề thật</h2>
+<p>Một yêu cầu “sửa bug này” thường thiếu file liên quan, kiến trúc hiện tại, convention, test cần chạy, phạm vi được sửa và điều cấm. AI vẫn có thể làm, nhưng phải đoán.</p>
+<p><strong>Một câu cần nhớ:</strong> Context Engineering là thiết kế môi trường ra quyết định cho AI.</p>
+<h2 id="module-03-context-engineering-giao-viec-cho-ai-1-boc-tach-ban-chat">1. Bóc tách bản chất</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Thành phần context</th><th>Vì sao cần</th><th>Ví dụ</th></tr></thead>
+<tbody>
+<tr><td>Mục tiêu</td><td>Giữ AI bám outcome.</td><td>Không báo thành công khi device offline.</td></tr>
+<tr><td>Kiến trúc hiện tại</td><td>Tránh phá boundary.</td><td>State update nằm ở module sync.</td></tr>
+<tr><td>File liên quan</td><td>Giảm tìm lan man.</td><td><code>device-service</code>, <code>state-store</code>, tests.</td></tr>
+<tr><td>Convention</td><td>Giữ maintainability.</td><td>Không thêm dependency mới.</td></tr>
+<tr><td>Test bắt buộc</td><td>Chứng minh đúng.</td><td>Offline, timeout, duplicated device.</td></tr>
+<tr><td>Điều không được đổi</td><td>Giữ compatibility.</td><td>Không đổi public API.</td></tr>
+</tbody></table></div>
+<figure><img src="assets/visuals/module-03/02-mechanism.png" alt="Bản đồ context giúp AI giảm đoán mò"><figcaption>Chú thích: Context tốt chuyển AI từ trạng thái suy đoán sang trạng thái thực thi trong đường ray rõ.</figcaption></figure>
+<h2 id="module-03-context-engineering-giao-viec-cho-ai-2-nguyen-ly-cot-loi">2. Nguyên lý cốt lõi</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Nguyên lý</th><th>Giải thích</th><th>Khi nào dễ sai</th></tr></thead>
+<tbody>
+<tr><td>Context trước solution</td><td>Đừng yêu cầu giải pháp khi chưa cho đủ bối cảnh.</td><td>Copy prompt chung cho mọi repo.</td></tr>
+<tr><td>Scope là guardrail</td><td>Phạm vi sửa càng rõ, rủi ro lan càng thấp.</td><td>Cho AI “dọn code” trong task bug nhỏ.</td></tr>
+<tr><td>Output format giúp review</td><td>Yêu cầu AI tóm tắt nguyên nhân, file sửa, test, rủi ro.</td><td>Nhận diff mà không biết lý do.</td></tr>
+</tbody></table></div>
+<h2 id="module-03-context-engineering-giao-viec-cho-ai-3-mo-hinh-tu-duy">3. Mô hình tư duy</h2>
+<pre><code>Task Brief = Goal + Current Behavior + Expected Behavior + Relevant Context + Allowed Scope + Constraints + Tests + Output Contract</code></pre>
+<h2 id="module-03-context-engineering-giao-viec-cho-ai-4-quy-trinh-hanh-dong">4. Quy trình hành động</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Bước</th><th>Việc cần làm</th><th>Đầu ra</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>Nêu bug/hành vi hiện tại và mong muốn.</td><td>AI hiểu vấn đề thật.</td></tr>
+<tr><td>2</td><td>Chỉ định module/file cần xem trước.</td><td>Tìm đúng nơi.</td></tr>
+<tr><td>3</td><td>Ghi phạm vi được sửa/không được sửa.</td><td>Giảm blast radius.</td></tr>
+<tr><td>4</td><td>Yêu cầu test và summary.</td><td>Dễ review.</td></tr>
+</tbody></table></div>
+<figure><img src="assets/visuals/module-03/03-workflow-practice.png" alt="Workflow giao task AI Agent có kiểm soát"><figcaption>Chú thích: Một task brief tốt giúp AI tạo diff nhỏ hơn, dễ kiểm chứng hơn và ít phá hệ thống hơn.</figcaption></figure>
+<h2 id="module-03-context-engineering-giao-viec-cho-ai-5-case-thuc-chien">5. Case thực chiến</h2>
+<p>Bug: thiết bị offline nhưng app vẫn báo “đã bật”. Nếu prompt chỉ nói “fix offline bug”, AI có thể sửa UI text. Prompt tốt phải nói nguồn thật của trạng thái là backend/device response, không đổi API, thêm test offline/timeout và log từ command tới confirmed state.</p>
+<h2 id="module-03-context-engineering-giao-viec-cho-ai-6-thuc-hanh">6. Thực hành</h2>
+<p>Viết prompt giao AI cho bug trên. Chấm theo rubric: có goal, context, scope, constraint, tests, output contract.</p>
+<h2 id="module-03-context-engineering-giao-viec-cho-ai-7-cong-cu-mang-ve">7. Công cụ mang về</h2>
+<p>Template giao việc cho AI Agent trong <code>cong-cu-thuc-hanh-ai-agent.md</code>.</p></section>
+<section class="doc-section" id="doc-module-04-architecture-chia-he-thong-dung"><div class="section-label">Module 04</div><h1 id="module-04-architecture-chia-he-thong-dung-module-04-architecture-chia-he-thong-dung-de-ai-khong-nhan-ban-su-roi">Module 04: Architecture - chia hệ thống đúng để AI không nhân bản sự rối</h1>
+<p><strong>Bài này giúp người học nhìn toàn chuỗi hệ thống thay vì chỉ nhìn một function hoặc một PR.</strong></p>
+<figure><img src="assets/visuals/module-04/01-scenario.png" alt="Sơ đồ hệ thống smart home được team R&amp;D phân tích theo tầng"><figcaption>Chú thích: Một câu lệnh người dùng đơn giản thường đi qua nhiều tầng kỹ thuật và nhiều điểm lỗi.</figcaption></figure>
+<h2 id="module-04-architecture-chia-he-thong-dung-0-van-de-that">0. Vấn đề thật</h2>
+<p>AI có thể viết một hàm tốt, nhưng sản phẩm không được tạo ra từ một hàm tốt. Nếu module, interface, state, error flow và ownership mơ hồ, AI sẽ sửa nhanh trong một cấu trúc sai.</p>
+<p><strong>Một câu cần nhớ:</strong> AI giỏi làm từng mảnh; con người phải chia đúng mảnh.</p>
+<h2 id="module-04-architecture-chia-he-thong-dung-1-boc-tach-ban-chat">1. Bóc tách bản chất</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Thành phần kiến trúc</th><th>Câu hỏi</th><th>Rủi ro nếu mơ hồ</th></tr></thead>
+<tbody>
+<tr><td>Module</td><td>Trách nhiệm nằm ở đâu?</td><td>Logic lặp và coupling.</td></tr>
+<tr><td>Interface</td><td>Tầng này hứa trả gì?</td><td>Contract vỡ khi sửa.</td></tr>
+<tr><td>State</td><td>Trạng thái thật ở đâu?</td><td>UI tin trạng thái giả.</td></tr>
+<tr><td>Error flow</td><td>Lỗi đi qua đâu?</td><td>Báo thành công sai.</td></tr>
+<tr><td>Ownership</td><td>Ai review phần này?</td><td>Không ai chịu trách nhiệm cuối.</td></tr>
+</tbody></table></div>
+<figure><img src="assets/visuals/module-04/02-mechanism.png" alt="Chuỗi từ giọng nói đến trạng thái thiết bị xác nhận"><figcaption>Chú thích: Kiến trúc đúng làm rõ dữ liệu, trạng thái và lỗi di chuyển qua hệ thống như thế nào.</figcaption></figure>
+<h2 id="module-04-architecture-chia-he-thong-dung-2-nguyen-ly-cot-loi">2. Nguyên lý cốt lõi</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Nguyên lý</th><th>Giải thích</th><th>Dễ sai khi</th></tr></thead>
+<tbody>
+<tr><td>Boundary bảo vệ tốc độ</td><td>Ranh giới rõ giúp AI sửa nhanh mà ít lan.</td><td>Cho AI sửa xuyên nhiều tầng.</td></tr>
+<tr><td>State phải có nguồn thật</td><td>Lệnh đã gửi không đồng nghĩa thiết bị đã đổi trạng thái.</td><td>UI dùng optimistic state như confirmed state.</td></tr>
+<tr><td>Error flow là kiến trúc</td><td>Lỗi không phải phần phụ.</td><td>Chỉ thiết kế happy path.</td></tr>
+</tbody></table></div>
+<h2 id="module-04-architecture-chia-he-thong-dung-3-mo-hinh-tu-duy">3. Mô hình tư duy</h2>
+<pre><code>Audio → Speech Recognition → Intent → Device/Room Mapping → Tool Call → Device Response → Confirmed State → User Response</code></pre>
+<h2 id="module-04-architecture-chia-he-thong-dung-4-quy-trinh-hanh-dong">4. Quy trình hành động</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Bước</th><th>Việc cần làm</th><th>Đầu ra</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>Vẽ dòng dữ liệu chính.</td><td>Biết input/output từng tầng.</td></tr>
+<tr><td>2</td><td>Vẽ dòng lỗi.</td><td>Biết lỗi bị bắt ở đâu.</td></tr>
+<tr><td>3</td><td>Gắn ownership.</td><td>Biết ai review.</td></tr>
+<tr><td>4</td><td>Chỉ định test theo boundary.</td><td>Không test quá hẹp.</td></tr>
+</tbody></table></div>
+<figure><img src="assets/visuals/module-04/03-workflow-practice.png" alt="Practice mapping boundary và error flow trước khi code"><figcaption>Chú thích: Trước khi giao AI viết code, team cần biết thay đổi nằm ở tầng nào và không được vượt qua boundary nào.</figcaption></figure>
+<h2 id="module-04-architecture-chia-he-thong-dung-5-case-thuc-chien">5. Case thực chiến</h2>
+<p>“Bật đèn phòng khách” có thể thất bại ở nhận diện giọng nói, hiểu intent, map sai phòng, chọn sai thiết bị, thiết bị offline, gateway timeout hoặc thiếu confirmed state. Nếu chỉ sửa function gọi API, team có thể bỏ sót lỗi ở mapping hoặc response.</p>
+<h2 id="module-04-architecture-chia-he-thong-dung-6-thuc-hanh">6. Thực hành</h2>
+<p>Vẽ flow cho một tính năng đang làm. Đánh dấu: source of truth, error point, retry, log, owner, test. Nếu không đánh dấu được, chưa nên giao AI sửa code rộng.</p>
+<h2 id="module-04-architecture-chia-he-thong-dung-7-cong-cu-mang-ve">7. Công cụ mang về</h2>
+<p>Bảng Architecture Boundary Review: module, responsibility, input, output, state, error, owner, test.</p></section>
+<section class="doc-section" id="doc-module-05-tool-api-design-tay-chan-an-toan"><div class="section-label">Module 05</div><h1 id="module-05-tool-api-design-tay-chan-an-toan-module-05-tool-api-design-thiet-ke-tay-chan-an-toan-cho-ai-agent">Module 05: Tool/API Design - thiết kế “tay chân” an toàn cho AI Agent</h1>
+<p><strong>Bài này giúp người học thiết kế API/tool rõ intent, ít nhập nhằng và có guardrail cho hành động rủi ro.</strong></p>
+<figure><img src="assets/visuals/module-05/01-scenario.png" alt="AI Agent gọi tool điều khiển thiết bị trong hệ thống IoT"><figcaption>Chú thích: Trong hệ thống AI-native, API không chỉ dành cho con người; nó là cách AI hành động trong thế giới thật.</figcaption></figure>
+<h2 id="module-05-tool-api-design-tay-chan-an-toan-0-van-de-that">0. Vấn đề thật</h2>
+<p>Tool mơ hồ như <code>control_device(name, value)</code> dễ khiến AI chọn sai thiết bị, sai hành động hoặc báo thành công khi chưa có xác nhận. Tool rõ giúp AI hành động đúng hơn và reviewer dễ kiểm chứng hơn.</p>
+<p><strong>Một câu cần nhớ:</strong> Tool càng mơ hồ, AI càng dễ dùng sai; tool càng rõ, hệ thống càng dễ kiểm chứng.</p>
+<h2 id="module-05-tool-api-design-tay-chan-an-toan-1-boc-tach-ban-chat">1. Bóc tách bản chất</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Thiết kế</th><th>Vấn đề</th><th>Phiên bản rõ hơn</th></tr></thead>
+<tbody>
+<tr><td><code>control_device(name, value)</code></td><td><code>name</code> nhập nhằng, <code>value</code> không có kiểu.</td><td><code>set_device_power(device_id, power_state)</code></td></tr>
+<tr><td><code>set_light(value)</code></td><td>Không biết brightness hay power.</td><td><code>set_light_brightness(device_id, brightness_percent)</code></td></tr>
+<tr><td><code>send_command(payload)</code></td><td>Không có contract rõ.</td><td>Tool theo intent với enum và response schema.</td></tr>
+</tbody></table></div>
+<figure><img src="assets/visuals/module-05/02-mechanism.png" alt="So sánh tool mơ hồ và tool rõ intent"><figcaption>Chú thích: API tốt giảm không gian diễn giải sai bằng tên, kiểu, enum, permission và response rõ.</figcaption></figure>
+<h2 id="module-05-tool-api-design-tay-chan-an-toan-2-nguyen-ly-cot-loi">2. Nguyên lý cốt lõi</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Nguyên lý</th><th>Giải thích</th><th>Dễ sai khi</th></tr></thead>
+<tbody>
+<tr><td>Một tool nên có một intent chính</td><td>Giảm hành vi bất ngờ.</td><td>Gom nhiều hành động vào một endpoint tiện lợi.</td></tr>
+<tr><td>Kiểu dữ liệu là guardrail</td><td>Enum và schema giúp AI ít gọi sai.</td><td>Dùng string tự do.</td></tr>
+<tr><td>Response phải phân biệt sent và confirmed</td><td>Gửi lệnh thành công chưa chắc thiết bị đổi trạng thái.</td><td>Trả <code>success=true</code> quá sớm.</td></tr>
+<tr><td>Hành động rủi ro cần permission</td><td>Một số tool cần approval hoặc scope.</td><td>Cho AI thao tác production tự do.</td></tr>
+</tbody></table></div>
+<h2 id="module-05-tool-api-design-tay-chan-an-toan-3-mo-hinh-tu-duy">3. Mô hình tư duy</h2>
+<pre><code>Tool tốt = Tên rõ + Input rõ + Enum rõ + Permission rõ + Error rõ + Response rõ + Log rõ</code></pre>
+<h2 id="module-05-tool-api-design-tay-chan-an-toan-4-quy-trinh-hanh-dong">4. Quy trình hành động</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Bước</th><th>Việc cần làm</th><th>Đầu ra</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>Tách tool theo intent.</td><td>API ít nhập nhằng.</td></tr>
+<tr><td>2</td><td>Chuyển string tự do thành enum/schema.</td><td>Guardrail dữ liệu.</td></tr>
+<tr><td>3</td><td>Thiết kế error và confirmed state.</td><td>Không báo thành công giả.</td></tr>
+<tr><td>4</td><td>Gắn permission và audit log.</td><td>An toàn vận hành.</td></tr>
+</tbody></table></div>
+<figure><img src="assets/visuals/module-05/03-workflow-practice.png" alt="Workflow thiết kế tool/API an toàn cho AI Agent"><figcaption>Chú thích: Thiết kế tool tốt bắt đầu từ hành động thật, rủi ro thật và bằng chứng phản hồi thật.</figcaption></figure>
+<h2 id="module-05-tool-api-design-tay-chan-an-toan-5-case-thuc-chien">5. Case thực chiến</h2>
+<p>AI nhận “mở rèm phòng ngủ” nhưng tool chỉ có <code>control_device(name, value)</code>. Nếu có nhiều rèm hoặc một scene cùng tên, AI có thể chọn sai. Tool tốt cần device id, loại hành động, trạng thái mong muốn, permission và phản hồi xác nhận.</p>
+<h2 id="module-05-tool-api-design-tay-chan-an-toan-6-thuc-hanh">6. Thực hành</h2>
+<p>Chọn một API hoặc tool hiện có. Viết lại theo 7 tiêu chí: tên rõ, input rõ, enum, permission, error, response, log.</p>
+<h2 id="module-05-tool-api-design-tay-chan-an-toan-7-cong-cu-mang-ve">7. Công cụ mang về</h2>
+<p>Checklist Tool/API Design: intent, schema, enum, id thay vì tên, permission, idempotency, confirmed state, audit log.</p></section>
+<section class="doc-section" id="doc-module-06-evaluation-bang-chung-dung"><div class="section-label">Module 06</div><h1 id="module-06-evaluation-bang-chung-dung-module-06-evaluation-bang-chung-nao-cho-thay-ket-qua-dung">Module 06: Evaluation - bằng chứng nào cho thấy kết quả đúng?</h1>
+<p><strong>Bài này giúp người học chuyển từ “nhìn ổn” sang kiểm chứng bằng test, log, benchmark và bằng chứng thiết bị thật.</strong></p>
+<figure><img src="assets/visuals/module-06/01-scenario.png" alt="Reviewer R&amp;D kiểm chứng PR do AI sinh bằng test và log"><figcaption>Chú thích: Sau khi AI tạo kết quả, câu hỏi đầu tiên phải là “bằng chứng đâu?”.</figcaption></figure>
+<h2 id="module-06-evaluation-bang-chung-dung-0-van-de-that">0. Vấn đề thật</h2>
+<p>AI có thể tạo PR sạch, đặt tên tốt và viết test có vẻ hợp lý. Nhưng PR vẫn có thể sai yêu cầu, phá kiến trúc, bỏ sót edge case hoặc yếu trên thiết bị thật.</p>
+<p><strong>Một câu cần nhớ:</strong> Không có kiểm chứng, AI chỉ tạo ra cảm giác tiến bộ.</p>
+<h2 id="module-06-evaluation-bang-chung-dung-1-boc-tach-ban-chat">1. Bóc tách bản chất</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Loại bằng chứng</th><th>Dùng khi</th><th>Ví dụ</th></tr></thead>
+<tbody>
+<tr><td>Unit test</td><td>Logic cục bộ.</td><td>Validate input, state transition.</td></tr>
+<tr><td>Integration test</td><td>Nhiều module phối hợp.</td><td>API tới state store.</td></tr>
+<tr><td>Contract test</td><td>Interface cần giữ ổn định.</td><td>Response schema không đổi.</td></tr>
+<tr><td>E2E test</td><td>Luồng người dùng.</td><td>Bật đèn theo phòng.</td></tr>
+<tr><td>Load/security test</td><td>Rủi ro hiệu năng/bảo mật.</td><td>Latency, permission bypass.</td></tr>
+<tr><td>HIL/fault injection</td><td>Firmware/thiết bị thật.</td><td>Timeout, brown-out, packet loss.</td></tr>
+</tbody></table></div>
+<figure><img src="assets/visuals/module-06/02-mechanism.png" alt="Thang bằng chứng từ unit test đến thiết bị thật"><figcaption>Chú thích: Mỗi loại rủi ro cần một loại bằng chứng phù hợp; unit test không thay thế được thiết bị thật.</figcaption></figure>
+<h2 id="module-06-evaluation-bang-chung-dung-2-nguyen-ly-cot-loi">2. Nguyên lý cốt lõi</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Nguyên lý</th><th>Giải thích</th><th>Dễ sai khi</th></tr></thead>
+<tbody>
+<tr><td>Test phải gắn với rủi ro</td><td>Không phải mọi test đều có giá trị như nhau.</td><td>Test happy path để che lỗi error path.</td></tr>
+<tr><td>Log là bằng chứng vận hành</td><td>Khi lỗi thật xảy ra, log giúp truy vết.</td><td>Chỉ log “failed”.</td></tr>
+<tr><td>Firmware cần thực tế vật lý</td><td>Mock không đo timing, power, watchdog, nhiễu.</td><td>Tin driver mẫu vì compile được.</td></tr>
+</tbody></table></div>
+<h2 id="module-06-evaluation-bang-chung-dung-3-mo-hinh-tu-duy">3. Mô hình tư duy</h2>
+<pre><code>Risk → Evidence Type → Test/Log/Metric → Pass Criteria → Residual Risk</code></pre>
+<h2 id="module-06-evaluation-bang-chung-dung-4-quy-trinh-hanh-dong">4. Quy trình hành động</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Bước</th><th>Việc cần làm</th><th>Đầu ra</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>Nêu rủi ro chính của thay đổi.</td><td>Danh sách rủi ro.</td></tr>
+<tr><td>2</td><td>Chọn loại bằng chứng tương ứng.</td><td>Test/log/metric.</td></tr>
+<tr><td>3</td><td>Đặt ngưỡng pass.</td><td>Tiêu chí khách quan.</td></tr>
+<tr><td>4</td><td>Ghi rủi ro còn lại.</td><td>Quyết định release có trách nhiệm.</td></tr>
+</tbody></table></div>
+<figure><img src="assets/visuals/module-06/03-workflow-practice.png" alt="Workflow review code AI sinh bằng rủi ro và bằng chứng"><figcaption>Chú thích: Evaluation tốt biến review từ cảm giác thành đối chiếu rủi ro với bằng chứng.</figcaption></figure>
+<h2 id="module-06-evaluation-bang-chung-dung-5-case-thuc-chien">5. Case thực chiến</h2>
+<p>AI sinh state machine firmware cho relay. Compile pass chưa đủ. Cần test timing, memory, watchdog recovery, mất gói truyền thông, reboot giữa lệnh, long-run và xác nhận trên thiết bị thật.</p>
+<h2 id="module-06-evaluation-bang-chung-dung-6-thuc-hanh">6. Thực hành</h2>
+<p>Với một PR hiện tại, lập bảng Risk → Evidence. Nếu có rủi ro cao mà không có bằng chứng, PR chưa sẵn sàng merge.</p>
+<h2 id="module-06-evaluation-bang-chung-dung-7-cong-cu-mang-ve">7. Công cụ mang về</h2>
+<p>Rubric review code do AI sinh trong <code>cong-cu-thuc-hanh-ai-agent.md</code>.</p></section>
+<section class="doc-section" id="doc-module-07-observability-phan-doan-ky-thuat"><div class="section-label">Module 07</div><h1 id="module-07-observability-phan-doan-ky-thuat-module-07-observability-va-phan-doan-ky-thuat">Module 07: Observability và phán đoán kỹ thuật</h1>
+<p><strong>Bài này giúp người học nhìn thấy hệ thống khi chạy thật và chọn phương án kỹ thuật phù hợp thay vì chọn phương án trông hay nhất.</strong></p>
+<figure><img src="assets/visuals/module-07/01-scenario.png" alt="Dashboard observability cho hệ thống AI-native smart home"><figcaption>Chú thích: Không có log và trace, debug AI Agent giống như sửa hệ thống mà không có đồng hồ đo.</figcaption></figure>
+<h2 id="module-07-observability-phan-doan-ky-thuat-0-van-de-that">0. Vấn đề thật</h2>
+<p>Khi hệ thống AI-native sai, lỗi có thể nằm ở user input, speech recognition, intent, context, tool call, device response, state sync hoặc final response. Nếu thiếu observability, team chỉ đoán.</p>
+<p><strong>Một câu cần nhớ:</strong> Hệ thống không quan sát được thì không thể trưởng thành có trách nhiệm.</p>
+<h2 id="module-07-observability-phan-doan-ky-thuat-1-boc-tach-ban-chat">1. Bóc tách bản chất</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Cần nhìn thấy</th><th>Câu hỏi</th><th>Ý nghĩa</th></tr></thead>
+<tbody>
+<tr><td>User input</td><td>Người dùng thật sự nói/nhập gì?</td><td>Tránh đổ lỗi sai tầng.</td></tr>
+<tr><td>Intent</td><td>AI hiểu mục tiêu gì?</td><td>Bắt lỗi hiểu sai.</td></tr>
+<tr><td>Context</td><td>AI nhận bối cảnh nào?</td><td>Bắt lỗi context thiếu.</td></tr>
+<tr><td>Tool call</td><td>Tool nào được gọi với tham số gì?</td><td>Bắt lỗi action.</td></tr>
+<tr><td>Tool response</td><td>Tool trả gì?</td><td>Phân biệt sent/confirmed.</td></tr>
+<tr><td>Final response</td><td>Người dùng được báo gì?</td><td>Bắt lỗi nói quá chắc chắn.</td></tr>
+</tbody></table></div>
+<figure><img src="assets/visuals/module-07/02-mechanism.png" alt="Trace từ user input đến final response"><figcaption>Chú thích: Trace tốt giúp team xác định lỗi nằm ở tầng nào thay vì tranh luận bằng cảm giác.</figcaption></figure>
+<h2 id="module-07-observability-phan-doan-ky-thuat-2-nguyen-ly-cot-loi">2. Nguyên lý cốt lõi</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Nguyên lý</th><th>Giải thích</th><th>Dễ sai khi</th></tr></thead>
+<tbody>
+<tr><td>Log phải phục vụ câu hỏi debug</td><td>Log nhiều chưa chắc hữu ích.</td><td>Log không có correlation id.</td></tr>
+<tr><td>Phán đoán là chọn dưới ràng buộc</td><td>AI đưa phương án, con người chọn theo bối cảnh.</td><td>Chọn giải pháp phức tạp vì nghe hiện đại.</td></tr>
+<tr><td>Đơn giản là tài sản vận hành</td><td>Càng ít phần chuyển động, càng dễ kiểm chứng.</td><td>Tối ưu sớm hoặc over-engineer.</td></tr>
+</tbody></table></div>
+<h2 id="module-07-observability-phan-doan-ky-thuat-3-mo-hinh-tu-duy">3. Mô hình tư duy</h2>
+<pre><code>Observe → Localize → Explain → Decide → Verify → Learn</code></pre>
+<h2 id="module-07-observability-phan-doan-ky-thuat-4-quy-trinh-hanh-dong">4. Quy trình hành động</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Bước</th><th>Việc cần làm</th><th>Đầu ra</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>Gắn correlation id cho luồng quan trọng.</td><td>Trace xuyên tầng.</td></tr>
+<tr><td>2</td><td>Log input, intent, tool, response, final state.</td><td>Dữ liệu debug.</td></tr>
+<tr><td>3</td><td>So sánh phương án theo rủi ro.</td><td>Quyết định kỹ thuật.</td></tr>
+<tr><td>4</td><td>Đo sau release.</td><td>Học từ vận hành thật.</td></tr>
+</tbody></table></div>
+<figure><img src="assets/visuals/module-07/03-workflow-practice.png" alt="Bài tập chọn phương án kỹ thuật theo rủi ro và maintainability"><figcaption>Chú thích: Phán đoán kỹ thuật tốt không hỏi “cách nào ngầu hơn”, mà hỏi cách nào đúng bối cảnh, ít rủi ro và dễ kiểm chứng hơn.</figcaption></figure>
+<h2 id="module-07-observability-phan-doan-ky-thuat-5-case-thuc-chien">5. Case thực chiến</h2>
+<p>AI đề xuất thêm một service trung gian để xử lý trạng thái thiết bị. Phương án nghe sạch, nhưng team hiện tại thiếu owner vận hành service mới. Phán đoán tốt có thể chọn sửa contract và log hiện tại trước, chỉ tách service khi có rủi ro đủ lớn.</p>
+<h2 id="module-07-observability-phan-doan-ky-thuat-6-thuc-hanh">6. Thực hành</h2>
+<p>Lấy 3 phương án AI đề xuất cho một bài toán. Chấm mỗi phương án theo: đơn giản, rủi ro, compatibility, testability, observability, năng lực team.</p>
+<h2 id="module-07-observability-phan-doan-ky-thuat-7-cong-cu-mang-ve">7. Công cụ mang về</h2>
+<p>Decision table: phương án, lợi ích, rủi ro, điều kiện thành công, test cần có, log cần có, rollback.</p></section>
+<section class="doc-section" id="doc-module-08-operating-system-team-rd-ai-native"><div class="section-label">Module 08</div><h1 id="module-08-operating-system-team-rd-ai-native-module-08-operating-system-cho-team-r-d-ai-native">Module 08: Operating System cho team R&amp;D AI-native</h1>
+<p><strong>Bài này giúp leader và team biến AI-native mindset thành thói quen vận hành hằng ngày, không chỉ là kỹ năng cá nhân.</strong></p>
+<figure><img src="assets/visuals/module-08/01-scenario.png" alt="Team R&amp;D dùng checklist 5Đ trong buổi review sprint"><figcaption>Chú thích: AI-native không chỉ là dùng công cụ mới; đó là cách team định nghĩa, thực thi, kiểm chứng và học lại.</figcaption></figure>
+<h2 id="module-08-operating-system-team-rd-ai-native-0-van-de-that">0. Vấn đề thật</h2>
+<p>Nếu mỗi người dùng AI theo cách riêng, chất lượng sẽ phụ thuộc vào cá nhân. Team cần một operating system chung: task brief, context, review, test, log, approval, rollback và learning loop.</p>
+<p><strong>Một câu cần nhớ:</strong> Giá trị cao nhất là biến AI thành năng lực tổ chức, không chỉ năng suất cá nhân.</p>
+<h2 id="module-08-operating-system-team-rd-ai-native-1-boc-tach-ban-chat">1. Bóc tách bản chất</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Tầng vận hành</th><th>Câu hỏi</th><th>Dấu hiệu đạt</th></tr></thead>
+<tbody>
+<tr><td>Trước khi làm</td><td>Task có mục tiêu, scope, Done chưa?</td><td>Không giao việc mơ hồ.</td></tr>
+<tr><td>Khi dùng AI</td><td>Context và quyền sửa rõ chưa?</td><td>AI tạo diff đúng phạm vi.</td></tr>
+<tr><td>Khi review</td><td>Có đối chiếu 5Đ không?</td><td>Không merge bằng cảm giác.</td></tr>
+<tr><td>Trước release</td><td>Có rollback và monitor không?</td><td>Release có kiểm soát.</td></tr>
+<tr><td>Sau release</td><td>Có ghi lại bài học không?</td><td>Team làm lần sau tốt hơn.</td></tr>
+</tbody></table></div>
+<figure><img src="assets/visuals/module-08/02-mechanism.png" alt="Mô hình 5Đ như hệ điều hành chất lượng cho team"><figcaption>Chú thích: 5Đ giúp team có cùng bộ lọc chất lượng trước khi tin rằng một task đã xong.</figcaption></figure>
+<h2 id="module-08-operating-system-team-rd-ai-native-2-nguyen-ly-cot-loi">2. Nguyên lý cốt lõi</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Nguyên lý</th><th>Giải thích</th><th>Dễ sai khi</th></tr></thead>
+<tbody>
+<tr><td>Quy trình tốt làm AI mạnh hơn</td><td>AI cần đường ray để chạy nhanh.</td><td>Thả AI tự do vào production code.</td></tr>
+<tr><td>Checklist là bộ nhớ tổ chức</td><td>Giảm phụ thuộc vào người nhớ giỏi.</td><td>Checklist quá dài và không dùng thật.</td></tr>
+<tr><td>Học sau release là bắt buộc</td><td>Mỗi lỗi nên nâng cấp quy trình.</td><td>Chỉ sửa lỗi rồi quên pattern.</td></tr>
+</tbody></table></div>
+<h2 id="module-08-operating-system-team-rd-ai-native-3-mo-hinh-tu-duy">3. Mô hình tư duy</h2>
+<pre><code>Task Brief → AI Execution → Human Review → Evidence → Release → Monitor → Retrospective → Better Template</code></pre>
+<h2 id="module-08-operating-system-team-rd-ai-native-4-quy-trinh-hanh-dong">4. Quy trình hành động</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Tuần</th><th>Trọng tâm</th><th>Kết quả</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>Viết task rõ.</td><td>Mỗi task có goal, scope, constraint, Done.</td></tr>
+<tr><td>2</td><td>Dùng AI có kiểm soát.</td><td>Prompt có context, phạm vi, test.</td></tr>
+<tr><td>3</td><td>Thiết kế test và log.</td><td>Mỗi task có bằng chứng đúng.</td></tr>
+<tr><td>4</td><td>Cải tiến quy trình team.</td><td>Checklist review, template task, bug pattern.</td></tr>
+</tbody></table></div>
+<figure><img src="assets/visuals/module-08/03-workflow-practice.png" alt="Lộ trình 30 ngày nâng cấp team R&amp;D AI-native"><figcaption>Chú thích: Lộ trình tốt bắt đầu từ task thật, tạo thói quen thật và đo bằng chất lượng công việc thật.</figcaption></figure>
+<h2 id="module-08-operating-system-team-rd-ai-native-5-case-thuc-chien">5. Case thực chiến</h2>
+<p>Sau một lỗi offline báo thành công, team không chỉ sửa bug. Team cập nhật template task để luôn hỏi confirmed state, thêm test timeout/offline vào checklist, bổ sung log correlation id và thêm mục “source of truth” vào review.</p>
+<h2 id="module-08-operating-system-team-rd-ai-native-6-thuc-hanh">6. Thực hành</h2>
+<p>Chọn một lỗi production hoặc bug pattern gần đây. Viết “bài học quy trình”: lỗi lọt qua vì thiếu chữ Đ nào, template nào cần sửa, test/log nào cần thêm, ai chịu trách nhiệm áp dụng.</p>
+<h2 id="module-08-operating-system-team-rd-ai-native-7-cong-cu-mang-ve">7. Công cụ mang về</h2>
+<p>Một operating system tối thiểu cho team: task template, 5Đ review, AI scope policy, required evidence, release checklist, retrospective learning log.</p></section>
+<section class="doc-section" id="doc-cong-cu-thuc-hanh-ai-agent"><div class="section-label">Công cụ</div><h1 id="cong-cu-thuc-hanh-ai-agent-cong-cu-thuc-hanh-ai-agent-cho-r-d">Công cụ thực hành AI Agent Cho R&amp;D</h1>
+<h2 id="cong-cu-thuc-hanh-ai-agent-1-template-giao-viec-cho-ai-agent">1. Template giao việc cho AI Agent</h2>
+<pre><code>Bạn là AI coding agent hỗ trợ trong project này.
 
-  <main class="content">
-    <section class="section" id="van-de">
-      <p class="big">Có một nghịch lý đang đến rất nhanh: code trở nên rẻ hơn, nhưng hệ thống đúng vẫn rất đắt.</p>
-      <p>Một AI Agent có thể đọc project, sửa file, tạo test, viết tài liệu, chạy lệnh, nhìn log, rồi tự lặp lại cho đến khi mọi thứ có vẻ ổn. Điều đó hấp dẫn. Nhưng nó cũng đặt ra một câu hỏi khó chịu: nếu AI đã viết code nhanh hơn, giá trị thật sự của nhân sự R&D còn nằm ở đâu?</p>
-      <p>Câu trả lời không phải là gõ phím nhanh hơn AI. Câu trả lời là nâng vai trò của mình lên: định nghĩa đúng vấn đề, thiết kế đúng hệ thống, đặt đúng ràng buộc, kiểm chứng đúng kết quả, và dùng AI như một lực lượng thực thi rất mạnh nhưng cần được dẫn dắt.</p>
-      <blockquote><p>AI làm nhanh cả việc đúng lẫn việc sai.</p></blockquote>
-      <p>Nếu yêu cầu mơ hồ, AI có thể sinh ra rất nhiều code mơ hồ. Nếu kiến trúc không rõ, AI có thể làm hệ thống rối nhanh hơn. Nếu không có tiêu chí kiểm chứng, chúng ta rất dễ nhầm giữa “trông có vẻ đúng” và “đúng thật”.</p>
-    </section>
+## Mục tiêu
+[Mô tả kết quả sản phẩm cần đạt, không chỉ mô tả code cần viết.]
 
-    <section class="section wide" id="ba-nang-luc">
-      <div class="media-card">
-        <img src="assets/spec-architecture-evaluation.png" alt="Dòng chảy từ đặc tả, kiến trúc đến kiểm chứng">
-        <p class="caption">Ba năng lực lõi trong thời AI-native: biến yêu cầu mơ hồ thành đặc tả rõ, chia hệ thống đúng, và chứng minh kết quả bằng kiểm chứng.</p>
-      </div>
-    </section>
+## Bối cảnh
+[Module, flow, lỗi hiện tại, hành vi mong muốn, dữ liệu nguồn sự thật.]
 
-    <section class="section">
-      <h2>Ba năng lực lõi</h2>
-      <div class="grid">
-        <div class="tile">
-          <strong>Đặc tả</strong>
-          <span>Làm rõ mục tiêu, đầu vào, đầu ra, điều kiện lỗi, ràng buộc và tiêu chí hoàn thành trước khi giao việc cho AI hoặc con người.</span>
-        </div>
-        <div class="tile">
-          <strong>Kiến trúc</strong>
-          <span>Chia hệ thống thành module, boundary, interface, state, error flow và ownership rõ để AI thực thi trong đường ray đúng.</span>
-        </div>
-        <div class="tile">
-          <strong>Kiểm chứng</strong>
-          <span>Đòi hỏi bằng chứng: test, log, benchmark, trace, hardware evidence hoặc tiêu chí đo để biết kết quả đúng thật.</span>
-        </div>
-      </div>
-      <p>Một yêu cầu như “bật đèn phòng khách” nghe rất đơn giản. Nhưng hệ thống thật phải đi qua nhận diện giọng nói, hiểu ý định, tìm phòng, tìm thiết bị, xử lý nhiều thiết bị, kiểm tra quyền, gửi lệnh, nhận phản hồi, xác nhận trạng thái và phản hồi lại người dùng. Kỹ sư giỏi là người nhìn thấy toàn chuỗi đó, không chỉ một function.</p>
-      <p>Khi giao việc cho AI, khác biệt không nằm ở việc viết prompt dài. Khác biệt nằm ở chất lượng tư duy: mục tiêu rõ, scope rõ, ràng buộc rõ, Definition of Done rõ và test bắt buộc rõ.</p>
-    </section>
+## Phạm vi được phép sửa
+- Được sửa:
+- Không được sửa:
 
-    <section class="section quote-band">
-      <p class="big">AI Agent giống một nhân sự junior có tốc độ cực cao: đọc nhanh, viết nhanh, không mệt, nhưng vẫn cần người senior định hướng, giới hạn, kiểm chứng và chịu trách nhiệm cuối cùng.</p>
-      <p>Vì vậy, câu hỏi trước khi dùng AI không phải là “AI có làm được không?”. Câu hỏi đúng hơn là: “Ta đã đủ rõ để AI làm đúng chưa?”.</p>
-    </section>
+## Ràng buộc kỹ thuật
+- Không thay đổi public API nếu chưa được yêu cầu.
+- Không thêm thư viện mới nếu chưa được duyệt.
+- Không làm tăng độ phức tạp không cần thiết.
+- Tuân thủ convention hiện tại.
 
-    <section class="section">
-      <h2>Đúng vấn đề trước, rồi mới đúng code</h2>
-      <p>Trong môi trường R&D, chúng ta hay muốn bắt tay vào làm nhanh. Có task là mở IDE. Có bug là nhảy vào code. Có yêu cầu mới là nghĩ ngay tới API, database, UI hoặc driver.</p>
-      <p>Nhưng trong thời AI Agent, đặc tả kém là nguồn gốc của rất nhiều lãng phí. Một yêu cầu như “làm tính năng điều khiển thiết bị” gần như chưa đủ để thực thi an toàn. Nó thiếu mục tiêu, thiếu đầu vào, thiếu đầu ra, thiếu điều kiện lỗi, thiếu ràng buộc và thiếu tiêu chí hoàn thành.</p>
-      <div class="pill-row" aria-label="Các câu hỏi đặc tả">
-        <span class="pill">Mục tiêu thật là gì?</span>
-        <span class="pill">Source of truth ở đâu?</span>
-        <span class="pill">Case lỗi nào bắt buộc?</span>
-        <span class="pill">Không được thay đổi gì?</span>
-        <span class="pill">Done được đo bằng gì?</span>
-      </div>
-    </section>
+## Definition of Done
+Task chỉ hoàn thành khi:
+1.
+2.
+3.
 
-    <section class="section">
-      <h2>Software và firmware đều phải nâng cấp</h2>
-      <p>Với software, năng lực thiết kế API và tool trở nên quan trọng hơn. API không chỉ dành cho con người nữa. Nó còn là “tay chân” của AI Agent. Tool mơ hồ như <code>control_device(name, value)</code> rất tiện nhưng dễ bị dùng sai. Tool rõ hơn như <code>set_device_power(device_id, power_state)</code> hoặc <code>get_device_current_state(device_id)</code> giảm nhập nhằng và giảm rủi ro.</p>
-      <p>Với firmware, yêu cầu còn khắt khe hơn. Firmware chạm vào điện áp, dòng điện, relay, motor, nhiệt độ, pin, sóng không dây, bus truyền thông, watchdog, flash, RAM và timing. AI có thể sinh driver mẫu, nhưng AI không đứng cạnh thiết bị thật để nghe relay đóng, đo dòng, nhìn oscilloscope, hay quan sát lỗi chỉ xảy ra sau 12 giờ chạy liên tục.</p>
-      <p>Firmware Engineer dùng AI tốt không phải là người copy code AI vào MCU. Đó là người biết yêu cầu state machine rõ, không dùng dynamic allocation khi không phù hợp, có timeout, retry policy, watchdog recovery, log nhẹ và test mô phỏng fault.</p>
-    </section>
+## Test bắt buộc
+- Happy path:
+- Error path:
+- Edge case:
+- Regression case:
 
-    <section class="section wide">
-      <div class="media-card">
-        <img src="assets/rd-team-ai-native.png" alt="Đội R&D cùng xem một bản đồ hệ thống AI-native có kiểm chứng">
-        <p class="caption">AI-native không phải câu chuyện của một cá nhân dùng prompt tốt hơn. Đây là năng lực team: context, tool, test, log, review và quy trình cùng trưởng thành.</p>
-      </div>
-    </section>
-
-    <section class="section">
-      <h2>5Đ trước mỗi task quan trọng</h2>
-      <p><strong>Đúng vấn đề:</strong> có đang giải đúng pain point không, hay chỉ đang làm theo một yêu cầu chưa được làm rõ?</p>
-      <p><strong>Đúng thiết kế:</strong> module, interface, state, error flow và ownership có hợp lý không?</p>
-      <p><strong>Đúng dữ liệu:</strong> input, output, source of truth và trạng thái xác nhận có rõ không?</p>
-      <p><strong>Đúng điều kiện lỗi:</strong> offline, timeout, packet loss, trùng tên, thiếu quyền, brown-out, retry và rollback đã được tính chưa?</p>
-      <p><strong>Đúng kiểm chứng:</strong> có test, log, benchmark, hardware evidence hoặc tiêu chí đo để chứng minh không?</p>
-    </section>
-
-    <section class="section" id="thuc-hanh">
-      <h2>Definition of Done trước khi code</h2>
-      <p>Một thay đổi nhỏ nhưng tác động lớn là viết Definition of Done trước khi bắt đầu. Đây không phải là thêm thủ tục. Đây là giảm chi phí mơ hồ.</p>
-      <div class="dod">
-        <pre>Task được coi là hoàn thành khi:
+## Yêu cầu đầu ra
+1. Tóm tắt nguyên nhân.
+2. Tóm tắt thay đổi.
+3. Danh sách file đã sửa.
+4. Test đã thêm/chạy.
+5. Rủi ro còn lại nếu có.</code></pre>
+<h2 id="cong-cu-thuc-hanh-ai-agent-2-checklist-5d-truoc-khi-merge">2. Checklist 5Đ trước khi merge</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>5Đ</th><th>Câu hỏi</th><th>Bằng chứng cần có</th></tr></thead>
+<tbody>
+<tr><td>Đúng vấn đề</td><td>Có giải đúng pain point không?</td><td>Ticket/brief có mục tiêu và user outcome.</td></tr>
+<tr><td>Đúng thiết kế</td><td>Có giữ boundary, interface, ownership không?</td><td>Review kiến trúc hoặc diff nhỏ đúng scope.</td></tr>
+<tr><td>Đúng dữ liệu</td><td>Source of truth, state, input/output rõ chưa?</td><td>Contract, schema, confirmed state hoặc trace.</td></tr>
+<tr><td>Đúng điều kiện lỗi</td><td>Offline, timeout, thiếu quyền, trùng tên đã tính chưa?</td><td>Test lỗi, fault injection, rollback.</td></tr>
+<tr><td>Đúng kiểm chứng</td><td>Có chứng minh được đúng không?</td><td>Test pass, log, benchmark, thiết bị thật nếu cần.</td></tr>
+</tbody></table></div>
+<h2 id="cong-cu-thuc-hanh-ai-agent-3-rubric-review-code-do-ai-sinh">3. Rubric review code do AI sinh</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Tiêu chí</th><th>Chưa đạt</th><th>Đạt</th><th>Xuất sắc</th></tr></thead>
+<tbody>
+<tr><td>Bám yêu cầu</td><td>PR giải vấn đề khác hoặc quá rộng.</td><td>Đúng mục tiêu chính.</td><td>Đúng mục tiêu, giữ scope, nêu rõ tradeoff.</td></tr>
+<tr><td>Kiến trúc</td><td>Thêm coupling hoặc bypass boundary.</td><td>Theo pattern hiện tại.</td><td>Làm rõ ownership và giảm rủi ro vận hành.</td></tr>
+<tr><td>Lỗi và edge case</td><td>Chỉ xử lý happy path.</td><td>Có error path chính.</td><td>Có timeout, permission, rollback, trạng thái không chắc chắn.</td></tr>
+<tr><td>Test</td><td>Ít hoặc không có test.</td><td>Có test chính.</td><td>Có regression, edge, contract hoặc HIL khi cần.</td></tr>
+<tr><td>Observability</td><td>Không log/trace được lỗi.</td><td>Có log cơ bản.</td><td>Trace đủ từ input đến tool/device/response.</td></tr>
+<tr><td>Maintainability</td><td>Code dài, khó hiểu, khó sửa.</td><td>Dễ đọc và theo convention.</td><td>Đơn giản, ít phụ thuộc, dễ mở rộng có kiểm soát.</td></tr>
+</tbody></table></div>
+<h2 id="cong-cu-thuc-hanh-ai-agent-4-mau-definition-of-done-cho-smart-home">4. Mẫu Definition of Done cho smart home</h2>
+<pre><code>Task được coi là hoàn thành khi:
 
 1. User có thể bật/tắt thiết bị theo phòng.
 2. Nếu thiết bị offline, hệ thống không báo thành công giả.
-3. Nếu có nhiều thiết bị phù hợp, hệ thống hỏi lại hoặc xử lý theo rule đã định.
-4. Có test cho happy path, offline, timeout, nhiều thiết bị, thiếu quyền.
-5. Có log trace từ user command tới tool call và phản hồi thiết bị.
-6. Không thay đổi public API hiện tại.
-7. Không làm tăng latency trung bình quá 10%.</pre>
-      </div>
-    </section>
-
-    <section class="section">
-      <h2>AI sẽ thay thế ai?</h2>
-      <p>AI Agent dễ thay thế những người chỉ làm theo hướng dẫn mơ hồ, không hiểu hệ thống, không kiểm chứng kết quả, không nâng cấp cách làm.</p>
-      <p>Nhưng AI sẽ khuếch đại rất mạnh những người hiểu bản chất bài toán, biết chia hệ thống, biết viết đặc tả, biết review, biết test, biết đo lường, biết thiết kế tool và quy trình, biết chịu trách nhiệm với chất lượng cuối cùng.</p>
-      <p>Khoảng cách không nằm ở việc ai dùng AI nhiều hơn. Khoảng cách nằm ở việc ai dùng AI với tư duy hệ thống tốt hơn.</p>
-    </section>
-  </main>
-
-  <footer class="closing">
-    <div class="closing-inner">
-      <p class="big">Làm nhanh không còn đủ. Phải làm đúng. Làm đúng cũng chưa đủ. Phải chứng minh được là đúng.</p>
-      <p>Trước mỗi task, hãy tự hỏi: tôi đang chỉ làm cho xong task, hay đang thiết kế một cách làm giúp cả hệ thống và cả team tốt hơn?</p>
-      <p>Nếu câu hỏi này xuất hiện thường xuyên hơn trong các cuộc trao đổi kỹ thuật, AI Agent sẽ không còn là mối đe dọa. Nó sẽ trở thành một lực lượng thực thi mạnh, với điều kiện chúng ta đủ rõ ràng, đủ kỷ luật và đủ năng lực để dẫn dắt nó.</p>
-    </div>
-  </footer>
+3. Nếu có nhiều thiết bị phù hợp, hệ thống hỏi lại hoặc dùng rule nhóm đã định nghĩa.
+4. UI chỉ báo thành công khi có confirmed state từ backend hoặc thiết bị.
+5. Có test cho happy path, offline, timeout, nhiều thiết bị, thiếu quyền.
+6. Có log trace từ user command tới intent, tool call, device response và final response.
+7. Không thay đổi public API hiện tại nếu chưa được duyệt.
+8. Có rollback plan nếu release gây lỗi.</code></pre>
+<h2 id="cong-cu-thuc-hanh-ai-agent-5-bai-tap-chuyen-giao">5. Bài tập chuyển giao</h2>
+<p>Chọn một task thật trong sprint hiện tại. Viết lại task đó bằng template trên, rồi tự chấm theo 5Đ. Nếu thiếu từ hai chữ Đ trở lên, chưa giao cho AI Agent thực thi.</p></section>
+    </main>
+  </div>
 </body>
 </html>
