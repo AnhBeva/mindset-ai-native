@@ -13,14 +13,14 @@ DOCS = [
     ("ban-do-ai-native-agent-mindset.md", "Bản đồ"),
     ("giao-trinh-ai-native-agent-mindset.md", "Giáo trình"),
     ("thuat-ngu-ai-native-agent-mindset.md", "Thuật ngữ"),
-    ("Module-01-ai-agent-code-re-hon-he-thong-dung-van-dat.md", "Module 01"),
-    ("Module-02-specification-dac-ta-co-the-thuc-thi.md", "Module 02"),
-    ("Module-03-context-engineering-giao-viec-cho-ai.md", "Module 03"),
-    ("Module-04-architecture-chia-he-thong-dung.md", "Module 04"),
-    ("Module-05-tool-api-design-tay-chan-an-toan.md", "Module 05"),
-    ("Module-06-evaluation-bang-chung-dung.md", "Module 06"),
-    ("Module-07-observability-phan-doan-ky-thuat.md", "Module 07"),
-    ("Module-08-operating-system-team-rd-ai-native.md", "Module 08"),
+    ("Module-01-ai-agent-code-re-hon-he-thong-dung-van-dat.md", "01. Code rẻ, hệ thống đúng vẫn đắt"),
+    ("Module-02-specification-dac-ta-co-the-thuc-thi.md", "02. Specification: đặc tả thực thi"),
+    ("Module-03-context-engineering-giao-viec-cho-ai.md", "03. Context Engineering cho AI"),
+    ("Module-04-architecture-chia-he-thong-dung.md", "04. Architecture: chia hệ thống đúng"),
+    ("Module-05-tool-api-design-tay-chan-an-toan.md", "05. Tool/API Design an toàn"),
+    ("Module-06-evaluation-bang-chung-dung.md", "06. Evaluation: bằng chứng đúng"),
+    ("Module-07-observability-phan-doan-ky-thuat.md", "07. Observability & phán đoán"),
+    ("Module-08-operating-system-team-rd-ai-native.md", "08. Operating System cho team"),
     ("cong-cu-thuc-hanh-ai-agent.md", "Công cụ"),
 ]
 
@@ -208,7 +208,7 @@ def build() -> None:
     a {{ color: var(--lumi-green-deep); }}
     .shell {{
       display: grid;
-      grid-template-columns: 280px minmax(0, 1fr);
+      grid-template-columns: 330px minmax(0, 1fr);
       min-height: 100vh;
     }}
     .sidebar {{
@@ -246,12 +246,14 @@ def build() -> None:
       margin-top: 16px;
     }}
     nav a {{
-      padding: 8px 10px;
+      padding: 9px 10px;
       border-radius: 8px;
       text-decoration: none;
       color: var(--text);
-      font-size: 14px;
+      font-size: 13.5px;
+      line-height: 1.28;
       font-weight: 700;
+      overflow-wrap: anywhere;
     }}
     nav a:hover {{ background: var(--lumi-mint); color: var(--lumi-green-deep); }}
     main {{

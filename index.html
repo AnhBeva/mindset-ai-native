@@ -31,7 +31,7 @@
     a { color: var(--lumi-green-deep); }
     .shell {
       display: grid;
-      grid-template-columns: 280px minmax(0, 1fr);
+      grid-template-columns: 330px minmax(0, 1fr);
       min-height: 100vh;
     }
     .sidebar {
@@ -69,12 +69,14 @@
       margin-top: 16px;
     }
     nav a {
-      padding: 8px 10px;
+      padding: 9px 10px;
       border-radius: 8px;
       text-decoration: none;
       color: var(--text);
-      font-size: 14px;
+      font-size: 13.5px;
+      line-height: 1.28;
       font-weight: 700;
+      overflow-wrap: anywhere;
     }
     nav a:hover { background: var(--lumi-mint); color: var(--lumi-green-deep); }
     main {
@@ -249,14 +251,14 @@
 <a href="#doc-ban-do-ai-native-agent-mindset">Bản đồ</a>
 <a href="#doc-giao-trinh-ai-native-agent-mindset">Giáo trình</a>
 <a href="#doc-thuat-ngu-ai-native-agent-mindset">Thuật ngữ</a>
-<a href="#doc-module-01-ai-agent-code-re-hon-he-thong-dung-van-dat">Module 01</a>
-<a href="#doc-module-02-specification-dac-ta-co-the-thuc-thi">Module 02</a>
-<a href="#doc-module-03-context-engineering-giao-viec-cho-ai">Module 03</a>
-<a href="#doc-module-04-architecture-chia-he-thong-dung">Module 04</a>
-<a href="#doc-module-05-tool-api-design-tay-chan-an-toan">Module 05</a>
-<a href="#doc-module-06-evaluation-bang-chung-dung">Module 06</a>
-<a href="#doc-module-07-observability-phan-doan-ky-thuat">Module 07</a>
-<a href="#doc-module-08-operating-system-team-rd-ai-native">Module 08</a>
+<a href="#doc-module-01-ai-agent-code-re-hon-he-thong-dung-van-dat">01. Code rẻ, hệ thống đúng vẫn đắt</a>
+<a href="#doc-module-02-specification-dac-ta-co-the-thuc-thi">02. Specification: đặc tả thực thi</a>
+<a href="#doc-module-03-context-engineering-giao-viec-cho-ai">03. Context Engineering cho AI</a>
+<a href="#doc-module-04-architecture-chia-he-thong-dung">04. Architecture: chia hệ thống đúng</a>
+<a href="#doc-module-05-tool-api-design-tay-chan-an-toan">05. Tool/API Design an toàn</a>
+<a href="#doc-module-06-evaluation-bang-chung-dung">06. Evaluation: bằng chứng đúng</a>
+<a href="#doc-module-07-observability-phan-doan-ky-thuat">07. Observability &amp; phán đoán</a>
+<a href="#doc-module-08-operating-system-team-rd-ai-native">08. Operating System cho team</a>
 <a href="#doc-cong-cu-thuc-hanh-ai-agent">Công cụ</a>
       </nav>
     </aside>
@@ -391,7 +393,7 @@
 <tr><td>Fault Injection</td><td>Kiểm chứng</td><td>Cố ý tạo lỗi như timeout, mất gói, offline, reboot để kiểm tra hệ thống.</td><td>Hệ thống tốt phải biết sai an toàn.</td><td>Ta đã thử tình huống xấu trước release chưa?</td></tr>
 <tr><td>5Đ</td><td>Quy trình</td><td>Đúng vấn đề, đúng thiết kế, đúng dữ liệu, đúng điều kiện lỗi, đúng kiểm chứng.</td><td>Bộ lọc chất lượng trước khi tin một task đã xong.</td><td>Task này thiếu chữ Đ nào?</td></tr>
 </tbody></table></div></section>
-<section class="doc-section" id="doc-module-01-ai-agent-code-re-hon-he-thong-dung-van-dat"><div class="section-label">Module 01</div><h1 id="module-01-ai-agent-code-re-hon-he-thong-dung-van-dat-module-01-ai-agent-lam-code-re-hon-nhung-he-thong-dung-van-dat">Module 01: AI Agent làm code rẻ hơn, nhưng hệ thống đúng vẫn đắt</h1>
+<section class="doc-section" id="doc-module-01-ai-agent-code-re-hon-he-thong-dung-van-dat"><div class="section-label">01. Code rẻ, hệ thống đúng vẫn đắt</div><h1 id="module-01-ai-agent-code-re-hon-he-thong-dung-van-dat-module-01-ai-agent-lam-code-re-hon-nhung-he-thong-dung-van-dat">Module 01: AI Agent làm code rẻ hơn, nhưng hệ thống đúng vẫn đắt</h1>
 <p><strong>Bài này giúp nhân sự R&amp;D thấy đúng sự dịch chuyển giá trị: từ tự viết từng dòng code sang thiết kế hệ thống thực thi có kiểm chứng.</strong></p>
 <figure><img src="assets/visuals/module-01/01-scenario.png" alt="Kỹ sư R&amp;D đứng trước bảng hệ thống cùng AI Agent"><figcaption>Chú thích: Tình huống mở đầu không phải “AI có viết code được không”, mà là team có biết giao đúng việc và kiểm chứng đúng kết quả không.</figcaption></figure>
 <h2 id="module-01-ai-agent-code-re-hon-he-thong-dung-van-dat-0-van-de-that-trong-r-d">0. Vấn đề thật trong R&amp;D</h2>
@@ -448,7 +450,7 @@
 </tbody></table></div>
 <h2 id="module-01-ai-agent-code-re-hon-he-thong-dung-van-dat-7-cong-cu-mang-ve">7. Công cụ mang về</h2>
 <p>Dùng checklist 5Đ trong <code>cong-cu-thuc-hanh-ai-agent.md</code> trước khi giao AI làm task quan trọng.</p></section>
-<section class="doc-section" id="doc-module-02-specification-dac-ta-co-the-thuc-thi"><div class="section-label">Module 02</div><h1 id="module-02-specification-dac-ta-co-the-thuc-thi-module-02-specification-bien-yeu-cau-mo-ho-thanh-dac-ta-co-the-thuc-thi">Module 02: Specification - biến yêu cầu mơ hồ thành đặc tả có thể thực thi</h1>
+<section class="doc-section" id="doc-module-02-specification-dac-ta-co-the-thuc-thi"><div class="section-label">02. Specification: đặc tả thực thi</div><h1 id="module-02-specification-dac-ta-co-the-thuc-thi-module-02-specification-bien-yeu-cau-mo-ho-thanh-dac-ta-co-the-thuc-thi">Module 02: Specification - biến yêu cầu mơ hồ thành đặc tả có thể thực thi</h1>
 <p><strong>Bài này giúp người học viết yêu cầu đủ rõ để AI, kỹ sư, tester và reviewer cùng hiểu một việc giống nhau.</strong></p>
 <figure><img src="assets/visuals/module-02/01-scenario.png" alt="Nhóm R&amp;D làm rõ yêu cầu trước khi giao AI Agent"><figcaption>Chú thích: Đặc tả tốt bắt đầu trước IDE: team phải thống nhất mục tiêu, ràng buộc, lỗi và tiêu chí Done.</figcaption></figure>
 <h2 id="module-02-specification-dac-ta-co-the-thuc-thi-0-van-de-that">0. Vấn đề thật</h2>
@@ -492,7 +494,7 @@
 <p>Chọn một yêu cầu mơ hồ trong backlog và viết lại thành đặc tả 8 phần. Reviewer chỉ được chấp nhận khi có ít nhất 3 error case và 1 tiêu chí kiểm chứng rõ.</p>
 <h2 id="module-02-specification-dac-ta-co-the-thuc-thi-7-cong-cu-mang-ve">7. Công cụ mang về</h2>
 <p>Mẫu Definition of Done trong <code>cong-cu-thuc-hanh-ai-agent.md</code>.</p></section>
-<section class="doc-section" id="doc-module-03-context-engineering-giao-viec-cho-ai"><div class="section-label">Module 03</div><h1 id="module-03-context-engineering-giao-viec-cho-ai-module-03-context-engineering-giao-viec-cho-ai-nhu-mot-luc-luong-thuc-thi">Module 03: Context Engineering - giao việc cho AI như một lực lượng thực thi</h1>
+<section class="doc-section" id="doc-module-03-context-engineering-giao-viec-cho-ai"><div class="section-label">03. Context Engineering cho AI</div><h1 id="module-03-context-engineering-giao-viec-cho-ai-module-03-context-engineering-giao-viec-cho-ai-nhu-mot-luc-luong-thuc-thi">Module 03: Context Engineering - giao việc cho AI như một lực lượng thực thi</h1>
 <p><strong>Bài này giúp người học đưa đúng ngữ cảnh để AI Agent không đoán sai, sửa quá rộng hoặc bỏ qua ràng buộc quan trọng.</strong></p>
 <figure><img src="assets/visuals/module-03/01-scenario.png" alt="Kỹ sư chuẩn bị context trước khi giao AI Agent sửa code"><figcaption>Chú thích: Prompt tốt không chỉ là câu lệnh; nó là bối cảnh đủ để AI hiểu hệ thống trước khi hành động.</figcaption></figure>
 <h2 id="module-03-context-engineering-giao-viec-cho-ai-0-van-de-that">0. Vấn đề thật</h2>
@@ -536,7 +538,7 @@
 <p>Viết prompt giao AI cho bug trên. Chấm theo rubric: có goal, context, scope, constraint, tests, output contract.</p>
 <h2 id="module-03-context-engineering-giao-viec-cho-ai-7-cong-cu-mang-ve">7. Công cụ mang về</h2>
 <p>Template giao việc cho AI Agent trong <code>cong-cu-thuc-hanh-ai-agent.md</code>.</p></section>
-<section class="doc-section" id="doc-module-04-architecture-chia-he-thong-dung"><div class="section-label">Module 04</div><h1 id="module-04-architecture-chia-he-thong-dung-module-04-architecture-chia-he-thong-dung-de-ai-khong-nhan-ban-su-roi">Module 04: Architecture - chia hệ thống đúng để AI không nhân bản sự rối</h1>
+<section class="doc-section" id="doc-module-04-architecture-chia-he-thong-dung"><div class="section-label">04. Architecture: chia hệ thống đúng</div><h1 id="module-04-architecture-chia-he-thong-dung-module-04-architecture-chia-he-thong-dung-de-ai-khong-nhan-ban-su-roi">Module 04: Architecture - chia hệ thống đúng để AI không nhân bản sự rối</h1>
 <p><strong>Bài này giúp người học nhìn toàn chuỗi hệ thống thay vì chỉ nhìn một function hoặc một PR.</strong></p>
 <figure><img src="assets/visuals/module-04/01-scenario.png" alt="Sơ đồ hệ thống smart home được team R&amp;D phân tích theo tầng"><figcaption>Chú thích: Một câu lệnh người dùng đơn giản thường đi qua nhiều tầng kỹ thuật và nhiều điểm lỗi.</figcaption></figure>
 <h2 id="module-04-architecture-chia-he-thong-dung-0-van-de-that">0. Vấn đề thật</h2>
@@ -579,7 +581,7 @@
 <p>Vẽ flow cho một tính năng đang làm. Đánh dấu: source of truth, error point, retry, log, owner, test. Nếu không đánh dấu được, chưa nên giao AI sửa code rộng.</p>
 <h2 id="module-04-architecture-chia-he-thong-dung-7-cong-cu-mang-ve">7. Công cụ mang về</h2>
 <p>Bảng Architecture Boundary Review: module, responsibility, input, output, state, error, owner, test.</p></section>
-<section class="doc-section" id="doc-module-05-tool-api-design-tay-chan-an-toan"><div class="section-label">Module 05</div><h1 id="module-05-tool-api-design-tay-chan-an-toan-module-05-tool-api-design-thiet-ke-tay-chan-an-toan-cho-ai-agent">Module 05: Tool/API Design - thiết kế “tay chân” an toàn cho AI Agent</h1>
+<section class="doc-section" id="doc-module-05-tool-api-design-tay-chan-an-toan"><div class="section-label">05. Tool/API Design an toàn</div><h1 id="module-05-tool-api-design-tay-chan-an-toan-module-05-tool-api-design-thiet-ke-tay-chan-an-toan-cho-ai-agent">Module 05: Tool/API Design - thiết kế “tay chân” an toàn cho AI Agent</h1>
 <p><strong>Bài này giúp người học thiết kế API/tool rõ intent, ít nhập nhằng và có guardrail cho hành động rủi ro.</strong></p>
 <figure><img src="assets/visuals/module-05/01-scenario.png" alt="AI Agent gọi tool điều khiển thiết bị trong hệ thống IoT"><figcaption>Chú thích: Trong hệ thống AI-native, API không chỉ dành cho con người; nó là cách AI hành động trong thế giới thật.</figcaption></figure>
 <h2 id="module-05-tool-api-design-tay-chan-an-toan-0-van-de-that">0. Vấn đề thật</h2>
@@ -621,7 +623,7 @@
 <p>Chọn một API hoặc tool hiện có. Viết lại theo 7 tiêu chí: tên rõ, input rõ, enum, permission, error, response, log.</p>
 <h2 id="module-05-tool-api-design-tay-chan-an-toan-7-cong-cu-mang-ve">7. Công cụ mang về</h2>
 <p>Checklist Tool/API Design: intent, schema, enum, id thay vì tên, permission, idempotency, confirmed state, audit log.</p></section>
-<section class="doc-section" id="doc-module-06-evaluation-bang-chung-dung"><div class="section-label">Module 06</div><h1 id="module-06-evaluation-bang-chung-dung-module-06-evaluation-bang-chung-nao-cho-thay-ket-qua-dung">Module 06: Evaluation - bằng chứng nào cho thấy kết quả đúng?</h1>
+<section class="doc-section" id="doc-module-06-evaluation-bang-chung-dung"><div class="section-label">06. Evaluation: bằng chứng đúng</div><h1 id="module-06-evaluation-bang-chung-dung-module-06-evaluation-bang-chung-nao-cho-thay-ket-qua-dung">Module 06: Evaluation - bằng chứng nào cho thấy kết quả đúng?</h1>
 <p><strong>Bài này giúp người học chuyển từ “nhìn ổn” sang kiểm chứng bằng test, log, benchmark và bằng chứng thiết bị thật.</strong></p>
 <figure><img src="assets/visuals/module-06/01-scenario.png" alt="Reviewer R&amp;D kiểm chứng PR do AI sinh bằng test và log"><figcaption>Chú thích: Sau khi AI tạo kết quả, câu hỏi đầu tiên phải là “bằng chứng đâu?”.</figcaption></figure>
 <h2 id="module-06-evaluation-bang-chung-dung-0-van-de-that">0. Vấn đề thật</h2>
@@ -665,7 +667,7 @@
 <p>Với một PR hiện tại, lập bảng Risk → Evidence. Nếu có rủi ro cao mà không có bằng chứng, PR chưa sẵn sàng merge.</p>
 <h2 id="module-06-evaluation-bang-chung-dung-7-cong-cu-mang-ve">7. Công cụ mang về</h2>
 <p>Rubric review code do AI sinh trong <code>cong-cu-thuc-hanh-ai-agent.md</code>.</p></section>
-<section class="doc-section" id="doc-module-07-observability-phan-doan-ky-thuat"><div class="section-label">Module 07</div><h1 id="module-07-observability-phan-doan-ky-thuat-module-07-observability-va-phan-doan-ky-thuat">Module 07: Observability và phán đoán kỹ thuật</h1>
+<section class="doc-section" id="doc-module-07-observability-phan-doan-ky-thuat"><div class="section-label">07. Observability &amp; phán đoán</div><h1 id="module-07-observability-phan-doan-ky-thuat-module-07-observability-va-phan-doan-ky-thuat">Module 07: Observability và phán đoán kỹ thuật</h1>
 <p><strong>Bài này giúp người học nhìn thấy hệ thống khi chạy thật và chọn phương án kỹ thuật phù hợp thay vì chọn phương án trông hay nhất.</strong></p>
 <figure><img src="assets/visuals/module-07/01-scenario.png" alt="Dashboard observability cho hệ thống AI-native smart home"><figcaption>Chú thích: Không có log và trace, debug AI Agent giống như sửa hệ thống mà không có đồng hồ đo.</figcaption></figure>
 <h2 id="module-07-observability-phan-doan-ky-thuat-0-van-de-that">0. Vấn đề thật</h2>
@@ -709,7 +711,7 @@
 <p>Lấy 3 phương án AI đề xuất cho một bài toán. Chấm mỗi phương án theo: đơn giản, rủi ro, compatibility, testability, observability, năng lực team.</p>
 <h2 id="module-07-observability-phan-doan-ky-thuat-7-cong-cu-mang-ve">7. Công cụ mang về</h2>
 <p>Decision table: phương án, lợi ích, rủi ro, điều kiện thành công, test cần có, log cần có, rollback.</p></section>
-<section class="doc-section" id="doc-module-08-operating-system-team-rd-ai-native"><div class="section-label">Module 08</div><h1 id="module-08-operating-system-team-rd-ai-native-module-08-operating-system-cho-team-r-d-ai-native">Module 08: Operating System cho team R&amp;D AI-native</h1>
+<section class="doc-section" id="doc-module-08-operating-system-team-rd-ai-native"><div class="section-label">08. Operating System cho team</div><h1 id="module-08-operating-system-team-rd-ai-native-module-08-operating-system-cho-team-r-d-ai-native">Module 08: Operating System cho team R&amp;D AI-native</h1>
 <p><strong>Bài này giúp leader và team biến AI-native mindset thành thói quen vận hành hằng ngày, không chỉ là kỹ năng cá nhân.</strong></p>
 <figure><img src="assets/visuals/module-08/01-scenario.png" alt="Team R&amp;D dùng checklist 5Đ trong buổi review sprint"><figcaption>Chú thích: AI-native không chỉ là dùng công cụ mới; đó là cách team định nghĩa, thực thi, kiểm chứng và học lại.</figcaption></figure>
 <h2 id="module-08-operating-system-team-rd-ai-native-0-van-de-that">0. Vấn đề thật</h2>
