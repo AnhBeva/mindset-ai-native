@@ -1,0 +1,4817 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Quy trình phát triển phần mềm AI-Native</title>
+  <meta name="description" content="Quy trình phát triển phần mềm AI-Native kết hợp AI Agent, Plugin Superpowers, Spec-Driven Development, quality gate, CI/CD, QA và vận hành." />
+  <style>
+    :root { color-scheme: light; --bg: #f6f8fb; --paper: #ffffff; --paper-soft: #f8fafc; --ink: #111827; --muted: #5b6472; --subtle: #8a94a6; --line: #d9e1ec; --line-soft: #e8eef6; --accent: #0f6bff; --accent-ink: #0747a6; --accent-soft: #eaf2ff; --good: #0f9f6e; --code: #0f172a; --max: 1240px; --radius: 8px; --shadow: 0 18px 50px rgba(16, 24, 40, 0.08); }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: var(--ink); background: linear-gradient(180deg, #eef5ff 0, var(--bg) 420px, #fff 100%); line-height: 1.62; }
+    a { color: inherit; text-decoration: none; }
+    .skip-link { position: absolute; left: 16px; top: -80px; z-index: 100; background: var(--ink); color: #fff; padding: 10px 14px; border-radius: 6px; }
+    .skip-link:focus { top: 16px; }
+    .topbar { position: sticky; top: 0; z-index: 50; border-bottom: 1px solid rgba(217, 225, 236, 0.9); background: rgba(255, 255, 255, 0.88); backdrop-filter: blur(18px); }
+    .topbar-inner { max-width: var(--max); margin: 0 auto; padding: 12px 22px; display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+    .brand { display: flex; align-items: center; gap: 10px; min-width: 0; font-size: 14px; font-weight: 800; letter-spacing: 0; }
+    .brand-mark { width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center; flex: none; background: var(--ink); color: #fff; font-weight: 900; }
+    .brand span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .top-actions { display: flex; gap: 8px; align-items: center; flex: none; }
+    .tool-button { border: 1px solid var(--line); background: #fff; color: var(--ink); border-radius: 999px; padding: 8px 12px; font-weight: 700; font-size: 13px; cursor: pointer; }
+    .tool-button:hover { border-color: var(--accent); color: var(--accent-ink); }
+    .hero { max-width: var(--max); margin: 0 auto; padding: 68px 22px 36px; }
+    .eyebrow { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 20px; padding: 7px 11px; border: 1px solid #bfdbfe; border-radius: 999px; background: var(--accent-soft); color: var(--accent-ink); font-size: 13px; font-weight: 800; }
+    .hero h1 { max-width: 980px; margin: 0; font-size: clamp(38px, 6vw, 72px); line-height: 1.02; letter-spacing: 0; }
+    .hero p { max-width: 880px; margin: 22px 0 0; color: var(--muted); font-size: clamp(17px, 2vw, 22px); }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
+    .button { display: inline-flex; min-height: 42px; align-items: center; justify-content: center; border-radius: 999px; padding: 0 16px; border: 1px solid var(--line); background: #fff; color: var(--ink); font-weight: 800; }
+    .button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .meta-grid { max-width: var(--max); margin: 0 auto; padding: 0 22px 42px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+    .meta-card { min-height: 98px; border: 1px solid var(--line); border-radius: var(--radius); background: rgba(255, 255, 255, 0.86); box-shadow: 0 8px 24px rgba(16, 24, 40, 0.05); padding: 16px; }
+    .meta-card strong { display: block; margin-bottom: 8px; font-size: 27px; line-height: 1; color: var(--ink); }
+    .meta-card span { color: var(--muted); font-size: 13px; font-weight: 700; }
+    .page-shell { max-width: var(--max); margin: 0 auto; padding: 0 22px 72px; display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 28px; align-items: start; }
+    .sidebar { position: sticky; top: 68px; max-height: calc(100vh - 86px); overflow: auto; border: 1px solid var(--line); border-radius: var(--radius); background: rgba(255, 255, 255, 0.92); box-shadow: 0 12px 34px rgba(16, 24, 40, 0.06); padding: 16px; }
+    .sidebar h2 { margin: 0 0 12px; font-size: 12px; color: var(--subtle); text-transform: uppercase; letter-spacing: .08em; }
+    .search { width: 100%; margin-bottom: 12px; border: 1px solid var(--line); border-radius: 8px; padding: 10px 11px; font: inherit; font-size: 14px; }
+    .toc-select { display: none; width: 100%; margin-bottom: 12px; border: 1px solid var(--line); border-radius: 8px; padding: 10px; font: inherit; }
+    .toc-nav { display: grid; gap: 2px; }
+    .toc-link { display: block; border-radius: 7px; padding: 7px 9px; color: #344054; font-size: 13px; font-weight: 700; }
+    .toc-link.level-1 { margin-top: 4px; color: var(--ink); }
+    .toc-link.level-2 { padding-left: 16px; color: var(--muted); font-weight: 650; }
+    .toc-link:hover { background: var(--paper-soft); color: var(--accent-ink); }
+    .content { min-width: 0; border: 1px solid var(--line); border-radius: var(--radius); background: var(--paper); box-shadow: var(--shadow); padding: 40px 48px; }
+    .content > *:first-child { margin-top: 0; }
+    .content h1, .content h2, .content h3, .content h4 { scroll-margin-top: 86px; line-height: 1.2; letter-spacing: 0; }
+    .content h1 { margin: 0 0 18px; padding-bottom: 18px; border-bottom: 1px solid var(--line); font-size: clamp(30px, 4vw, 48px); }
+    .content h2 { margin: 44px 0 16px; padding-top: 22px; border-top: 1px solid var(--line-soft); font-size: clamp(25px, 3vw, 34px); }
+    .content h3 { margin: 30px 0 12px; font-size: 21px; }
+    .content h4 { margin: 24px 0 10px; font-size: 18px; }
+    .heading-anchor { opacity: 0; margin-left: -24px; padding-right: 8px; color: var(--accent); font-weight: 900; }
+    .content h1:hover .heading-anchor, .content h2:hover .heading-anchor, .content h3:hover .heading-anchor, .content h4:hover .heading-anchor { opacity: 1; }
+    .content p, .content li { color: #293241; }
+    .content p { margin: 0 0 14px; }
+    .content blockquote { margin: 20px 0; padding: 14px 18px; border-left: 4px solid var(--accent); border-radius: 0 var(--radius) var(--radius) 0; background: var(--accent-soft); color: #17324d; }
+    .content blockquote p { margin: 0 0 8px; }
+    .content blockquote p:last-child { margin-bottom: 0; }
+    .content ul, .content ol { padding-left: 1.5rem; }
+    .content li + li { margin-top: 4px; }
+    .content hr { margin: 36px 0; border: 0; border-top: 1px solid var(--line); }
+    .content strong { color: var(--ink); }
+    .content a { color: var(--accent-ink); text-decoration: underline; text-underline-offset: 3px; }
+    .task-check { transform: translateY(1px); margin-right: 8px; accent-color: var(--good); }
+    .table-wrap { width: 100%; overflow: auto; margin: 18px 0 24px; border: 1px solid var(--line); border-radius: var(--radius); }
+    table { width: 100%; min-width: 760px; border-collapse: collapse; background: #fff; }
+    th, td { padding: 12px 14px; border-bottom: 1px solid var(--line-soft); text-align: left; vertical-align: top; }
+    th { background: #f3f6fa; color: #172033; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+    td { color: #344054; }
+    tr:last-child td { border-bottom: 0; }
+    code { border-radius: 6px; background: #eef2f7; padding: 2px 5px; color: #172033; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: .92em; }
+    pre { overflow: auto; margin: 18px 0 24px; border-radius: var(--radius); background: var(--code); color: #e5e7eb; padding: 16px; }
+    pre code { display: block; padding: 0; background: transparent; color: inherit; white-space: pre; }
+    .mermaid { overflow: auto; margin: 20px 0 28px; border: 1px solid var(--line); border-radius: var(--radius); background: #fff; padding: 18px; text-align: center; }
+    mark.search-hit { border-radius: 4px; background: #fff0a8; padding: 0 2px; }
+    .empty-state { display: none; border: 1px dashed var(--line); border-radius: var(--radius); padding: 24px; color: var(--muted); text-align: center; }
+    .footer { max-width: var(--max); margin: 0 auto; padding: 0 22px 46px; color: var(--muted); font-size: 13px; text-align: center; }
+    @media (max-width: 980px) { .meta-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .page-shell { grid-template-columns: 1fr; } .sidebar { position: static; max-height: none; } .toc-nav { display: none; } .toc-select { display: block; } .content { padding: 30px 24px; } }
+    @media (max-width: 620px) { .topbar-inner, .hero, .meta-grid, .page-shell, .footer { padding-left: 16px; padding-right: 16px; } .top-actions { display: none; } .hero { padding-top: 44px; } .hero h1 { font-size: 36px; } .meta-grid { grid-template-columns: 1fr; } .content { padding: 24px 16px; } .heading-anchor { display: none; } }
+    @media print { body { background: #fff; } .topbar, .hero-actions, .sidebar, .footer { display: none; } .hero { padding: 0 0 24px; } .meta-grid { display: none; } .page-shell { display: block; padding: 0; max-width: none; } .content { box-shadow: none; border: 0; padding: 0; } .content h1, .content h2, .content h3 { scroll-margin-top: 0; } .mermaid, pre, .table-wrap { break-inside: avoid; } }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Bỏ qua mục lục</a>
+  <header class="topbar"><div class="topbar-inner"><a class="brand" href="#top" aria-label="Về đầu trang"><span class="brand-mark">AI</span><span>AI-Native Software Development OS</span></a><div class="top-actions"><button class="tool-button" type="button" id="expandDiagrams">Render lại sơ đồ</button><button class="tool-button" type="button" onclick="window.print()">In / PDF</button></div></div></header>
+  <section class="hero" id="top"><div class="eyebrow">Phiên bản 1.0 • Cập nhật 2026-05-25</div><h1>Quy trình phát triển phần mềm AI-Native</h1><p>Playbook đầy đủ cho đội R&amp;D/Product/QA/DevOps/SRE: từ ý tưởng, PRD, SRS, UX, architecture, task, AI Agent, Superpowers, TDD, review, QA, release, monitoring đến retrospective và knowledge base.</p><div class="hero-actions"><a class="button primary" href="#content">Đọc tài liệu</a><a class="button" href="#quality-gate-matrix-toan-quy-trinh">Quality Gate Matrix</a><a class="button" href="#27-phu-luc-e-checklist-in-nhanh">Checklist in nhanh</a></div></section>
+  <section class="meta-grid" aria-label="Tổng quan tài liệu"><div class="meta-card"><strong>15</strong><span>phase vận hành</span></div><div class="meta-card"><strong>14</strong><span>quality gate</span></div><div class="meta-card"><strong>391</strong><span>checklist item</span></div><div class="meta-card"><strong>30</strong><span>sơ đồ Mermaid</span></div><div class="meta-card"><strong>60'</strong><span>ước tính thời gian đọc</span></div></section>
+  <div class="page-shell"><aside class="sidebar" aria-label="Mục lục"><h2>Mục lục</h2><input class="search" id="search" type="search" placeholder="Tìm trong tài liệu..." autocomplete="off" /><select class="toc-select" id="tocSelect" aria-label="Chọn mục"><option value="#quy-trinh-phat-trien-phan-mem-ai-native-ket-hop-ai-agent-va-plugin-superpowers">Quy trình phát triển phần mềm AI‑Native kết hợp AI Agent và Plugin Superpowers</option>
+<option value="#0-cach-dung-tai-lieu-nay">  0. Cách dùng tài liệu này</option>
+<option value="#1-tu-duy-cot-loi">  1. Tư duy cốt lõi</option>
+<option value="#1-1-nguyen-ly-so-1-spec-la-source-of-truth-code-la-ket-qua">    1.1. Nguyên lý số 1: Spec là “source of truth”, code là kết quả</option>
+<option value="#1-2-nguyen-ly-so-2-ai-agent-khong-thay-con-nguoi-quyet-dinh-ai-agent-tang-toc-vong-lap">    1.2. Nguyên lý số 2: AI Agent không thay con người quyết định, AI Agent tăng tốc vòng lặp</option>
+<option value="#1-3-nguyen-ly-so-3-superpowers-la-lop-ky-luat-ky-thuat-cho-coding-agent">    1.3. Nguyên lý số 3: Superpowers là lớp “kỷ luật kỹ thuật” cho coding agent</option>
+<option value="#2-mo-hinh-tong-the-ai-native-software-development-operating-system">  2. Mô hình tổng thể: AI‑Native Software Development Operating System</option>
+<option value="#2-1-so-do-tong-quan">    2.1. Sơ đồ tổng quan</option>
+<option value="#2-2-stack-cong-cu-khuyen-nghi">    2.2. Stack công cụ khuyến nghị</option>
+<option value="#2-3-mo-hinh-du-lieu-xuyen-suot">    2.3. Mô hình dữ liệu xuyên suốt</option>
+<option value="#3-vai-tro-con-nguoi-va-ai-agent">  3. Vai trò con người và AI Agent</option>
+<option value="#3-1-vai-tro-con-nguoi">    3.1. Vai trò con người</option>
+<option value="#3-2-vai-tro-ai-agent">    3.2. Vai trò AI Agent</option>
+<option value="#3-3-raci-mau-cho-feature-phan-mem">    3.3. RACI mẫu cho feature phần mềm</option>
+<option value="#4-quy-trinh-tong-the-theo-15-giai-doan">  4. Quy trình tổng thể theo 15 giai đoạn</option>
+<option value="#phase-0-governance-constitution-va-setup-nen-tang">PHASE 0 — Governance, Constitution và Setup nền tảng</option>
+<option value="#0-1-muc-tieu">  0.1. Mục tiêu</option>
+<option value="#0-2-input">  0.2. Input</option>
+<option value="#0-3-output">  0.3. Output</option>
+<option value="#0-4-engineering-constitution-mau">  0.4. Engineering Constitution mẫu</option>
+<option value="#0-5-checklist-phase-0">  0.5. Checklist Phase 0</option>
+<option value="#governance">    Governance</option>
+<option value="#repository">    Repository</option>
+<option value="#ai-agent">    AI Agent</option>
+<option value="#superpowers">    Superpowers</option>
+<option value="#0-6-quality-gate-phase-0">  0.6. Quality Gate Phase 0</option>
+<option value="#phase-1-intake-y-tuong-va-problem-framing">PHASE 1 — Intake, Ý tưởng và Problem Framing</option>
+<option value="#1-1-muc-tieu">  1.1. Mục tiêu</option>
+<option value="#1-2-cong-viec-con-nguoi">  1.2. Công việc con người</option>
+<option value="#1-3-cong-viec-ai-agent">  1.3. Công việc AI Agent</option>
+<option value="#1-4-superpowers-nen-dung">  1.4. Superpowers nên dùng</option>
+<option value="#1-5-template-problem-brief">  1.5. Template Problem Brief</option>
+<option value="#1-6-checklist-phase-1">  1.6. Checklist Phase 1</option>
+<option value="#1-7-gate-1-problem-clarity-gate">  1.7. Gate 1 — Problem Clarity Gate</option>
+<option value="#phase-2-product-discovery-va-prd">PHASE 2 — Product Discovery và PRD</option>
+<option value="#2-1-muc-tieu">  2.1. Mục tiêu</option>
+<option value="#2-2-so-do-prd">  2.2. Sơ đồ PRD</option>
+<option value="#2-3-cong-viec-con-nguoi">  2.3. Công việc con người</option>
+<option value="#2-4-cong-viec-ai-agent">  2.4. Công việc AI Agent</option>
+<option value="#2-5-template-prd-chuan">  2.5. Template PRD chuẩn</option>
+<option value="#2-6-checklist-prd">  2.6. Checklist PRD</option>
+<option value="#2-7-gate-2-prd-definition-of-ready">  2.7. Gate 2 — PRD Definition of Ready</option>
+<option value="#phase-3-srs-acceptance-criteria-va-requirement-engineering">PHASE 3 — SRS, Acceptance Criteria và Requirement Engineering</option>
+<option value="#3-1-muc-tieu">  3.1. Mục tiêu</option>
+<option value="#3-2-mo-hinh-requirement">  3.2. Mô hình requirement</option>
+<option value="#3-3-template-srs">  3.3. Template SRS</option>
+<option value="#3-4-acceptance-criteria-chuan-given-when-then">  3.4. Acceptance Criteria chuẩn Given‑When‑Then</option>
+<option value="#3-5-cong-viec-ai-agent">  3.5. Công việc AI Agent</option>
+<option value="#3-6-checklist-srs">  3.6. Checklist SRS</option>
+<option value="#3-7-gate-3-requirement-testability-gate">  3.7. Gate 3 — Requirement Testability Gate</option>
+<option value="#phase-4-ux-ui-prototype-va-state-design">PHASE 4 — UX/UI, Prototype và State Design</option>
+<option value="#4-1-muc-tieu">  4.1. Mục tiêu</option>
+<option value="#4-2-so-do-ux-tu-requirement-den-prototype">  4.2. Sơ đồ UX từ requirement đến prototype</option>
+<option value="#4-3-state-matrix-bat-buoc">  4.3. State Matrix bắt buộc</option>
+<option value="#4-4-cong-viec-ai-agent">  4.4. Công việc AI Agent</option>
+<option value="#4-5-checklist-ux-ui">  4.5. Checklist UX/UI</option>
+<option value="#4-6-gate-4-ux-handoff-gate">  4.6. Gate 4 — UX Handoff Gate</option>
+<option value="#phase-5-architecture-adr-va-risk-design">PHASE 5 — Architecture, ADR và Risk Design</option>
+<option value="#5-1-muc-tieu">  5.1. Mục tiêu</option>
+<option value="#5-2-so-do-kien-truc-logical">  5.2. Sơ đồ kiến trúc logical</option>
+<option value="#5-3-adr-template">  5.3. ADR template</option>
+<option value="#5-4-cong-viec-ai-agent">  5.4. Công việc AI Agent</option>
+<option value="#5-5-threat-model-toi-thieu">  5.5. Threat model tối thiểu</option>
+<option value="#5-6-checklist-architecture">  5.6. Checklist Architecture</option>
+<option value="#5-7-gate-5-architecture-approval-gate">  5.7. Gate 5 — Architecture Approval Gate</option>
+<option value="#phase-6-planning-wbs-risk-va-sprint-iteration-design">PHASE 6 — Planning, WBS, Risk và Sprint/Iteration Design</option>
+<option value="#6-1-muc-tieu">  6.1. Mục tiêu</option>
+<option value="#6-2-so-do-breakdown">  6.2. Sơ đồ breakdown</option>
+<option value="#6-3-task-template-cho-ai-agent">  6.3. Task template cho AI Agent</option>
+<option value="#6-4-cong-viec-ai-agent">  6.4. Công việc AI Agent</option>
+<option value="#6-5-checklist-planning">  6.5. Checklist Planning</option>
+<option value="#6-6-gate-6-plan-readiness-gate">  6.6. Gate 6 — Plan Readiness Gate</option>
+<option value="#phase-7-repo-environment-ci-cd-va-test-harness">PHASE 7 — Repo, Environment, CI/CD và Test Harness</option>
+<option value="#7-1-muc-tieu">  7.1. Mục tiêu</option>
+<option value="#7-2-so-do-ci-cd-baseline">  7.2. Sơ đồ CI/CD baseline</option>
+<option value="#7-3-branch-strategy-mau">  7.3. Branch strategy mẫu</option>
+<option value="#7-4-repo-structure-mau">  7.4. Repo structure mẫu</option>
+<option value="#7-5-agents-md-mau">  7.5. AGENTS.md mẫu</option>
+<option value="#7-6-checklist-phase-7">  7.6. Checklist Phase 7</option>
+<option value="#7-7-gate-7-automation-baseline-gate">  7.7. Gate 7 — Automation Baseline Gate</option>
+<option value="#phase-8-implementation-voi-ai-agent-superpowers-va-tdd">PHASE 8 — Implementation với AI Agent, Superpowers và TDD</option>
+<option value="#8-1-muc-tieu">  8.1. Mục tiêu</option>
+<option value="#8-2-vong-lap-superpowers-implementation">  8.2. Vòng lặp Superpowers Implementation</option>
+<option value="#8-3-prompt-giao-task-cho-ai-agent">  8.3. Prompt giao task cho AI Agent</option>
+<option value="#8-4-superpowers-skill-mapping">  8.4. Superpowers skill mapping</option>
+<option value="#8-5-checklist-implementation">  8.5. Checklist Implementation</option>
+<option value="#8-6-gate-8-developer-done-gate">  8.6. Gate 8 — Developer Done Gate</option>
+<option value="#phase-9-code-review-security-review-va-merge-control">PHASE 9 — Code Review, Security Review và Merge Control</option>
+<option value="#9-1-muc-tieu">  9.1. Mục tiêu</option>
+<option value="#9-2-vong-review-nhieu-lop">  9.2. Vòng review nhiều lớp</option>
+<option value="#9-3-pr-template-chuan">  9.3. PR template chuẩn</option>
+<option value="#9-4-ai-review-agent-checklist">  9.4. AI Review Agent checklist</option>
+<option value="#9-5-merge-policy">  9.5. Merge policy</option>
+<option value="#9-6-gate-9-merge-gate">  9.6. Gate 9 — Merge Gate</option>
+<option value="#phase-10-qa-regression-e2e-va-quality-engineering">PHASE 10 — QA, Regression, E2E và Quality Engineering</option>
+<option value="#10-1-muc-tieu">  10.1. Mục tiêu</option>
+<option value="#10-2-test-pyramid-mo-rong">  10.2. Test pyramid mở rộng</option>
+<option value="#10-3-loai-test-bat-buoc">  10.3. Loại test bắt buộc</option>
+<option value="#10-4-bug-report-template">  10.4. Bug report template</option>
+<option value="#10-5-ai-qa-agent-prompt">  10.5. AI QA Agent prompt</option>
+<option value="#10-6-checklist-qa">  10.6. Checklist QA</option>
+<option value="#10-7-gate-10-qa-sign-off-gate">  10.7. Gate 10 — QA Sign-off Gate</option>
+<option value="#phase-11-uat-beta-va-feedback-loop">PHASE 11 — UAT, Beta và Feedback Loop</option>
+<option value="#11-1-muc-tieu">  11.1. Mục tiêu</option>
+<option value="#11-2-beta-loop">  11.2. Beta loop</option>
+<option value="#11-3-feedback-classification">  11.3. Feedback classification</option>
+<option value="#11-4-checklist-uat-beta">  11.4. Checklist UAT/Beta</option>
+<option value="#11-5-gate-11-go-no-go-gate">  11.5. Gate 11 — Go/No-Go Gate</option>
+<option value="#phase-12-release-deployment-va-change-management">PHASE 12 — Release, Deployment và Change Management</option>
+<option value="#12-1-muc-tieu">  12.1. Mục tiêu</option>
+<option value="#12-2-release-flow">  12.2. Release flow</option>
+<option value="#12-3-release-checklist">  12.3. Release checklist</option>
+<option value="#truoc-release">    Trước release</option>
+<option value="#trong-release">    Trong release</option>
+<option value="#sau-release">    Sau release</option>
+<option value="#12-4-release-note-template">  12.4. Release note template</option>
+<option value="#12-5-gate-12-release-gate">  12.5. Gate 12 — Release Gate</option>
+<option value="#phase-13-monitoring-incident-va-rollback">PHASE 13 — Monitoring, Incident và Rollback</option>
+<option value="#13-1-muc-tieu">  13.1. Mục tiêu</option>
+<option value="#13-2-incident-severity">  13.2. Incident severity</option>
+<option value="#13-3-runbook-template">  13.3. Runbook template</option>
+<option value="#13-4-postmortem-template">  13.4. Postmortem template</option>
+<option value="#13-5-ai-agent-trong-van-hanh">  13.5. AI Agent trong vận hành</option>
+<option value="#13-6-gate-13-incident-closure-gate">  13.6. Gate 13 — Incident Closure Gate</option>
+<option value="#phase-14-retrospective-knowledge-base-va-continuous-improvement">PHASE 14 — Retrospective, Knowledge Base và Continuous Improvement</option>
+<option value="#14-1-muc-tieu">  14.1. Mục tiêu</option>
+<option value="#14-2-retro-questions">  14.2. Retro questions</option>
+<option value="#14-3-checklist-phase-14">  14.3. Checklist Phase 14</option>
+<option value="#5-quality-gate-matrix-toan-quy-trinh">5. Quality Gate Matrix toàn quy trình</option>
+<option value="#6-definition-of-ready-va-definition-of-done">6. Definition of Ready và Definition of Done</option>
+<option value="#6-1-definition-of-ready-cho-feature">  6.1. Definition of Ready cho feature</option>
+<option value="#6-2-definition-of-ready-cho-task">  6.2. Definition of Ready cho task</option>
+<option value="#6-3-definition-of-done-cho-task">  6.3. Definition of Done cho task</option>
+<option value="#6-4-definition-of-done-cho-release">  6.4. Definition of Done cho release</option>
+<option value="#7-mo-hinh-ai-agent-plugin-superpowers-trong-thuc-chien">7. Mô hình AI Agent + Plugin Superpowers trong thực chiến</option>
+<option value="#7-1-agent-operating-loop">  7.1. Agent Operating Loop</option>
+<option value="#7-2-quyen-han-cua-ai-agent">  7.2. Quyền hạn của AI Agent</option>
+<option value="#7-3-plugin-superpowers-nen-nam-o-dau">  7.3. Plugin Superpowers nên nằm ở đâu?</option>
+<option value="#7-4-khi-nao-nen-dung-nhieu-sub-agent">  7.4. Khi nào nên dùng nhiều sub‑agent?</option>
+<option value="#8-bo-prompt-chuan-cho-tung-vai-tro-ai-agent">8. Bộ prompt chuẩn cho từng vai trò AI Agent</option>
+<option value="#8-1-prompt-product-discovery-agent">  8.1. Prompt Product Discovery Agent</option>
+<option value="#8-2-prompt-prd-agent">  8.2. Prompt PRD Agent</option>
+<option value="#8-3-prompt-srs-agent">  8.3. Prompt SRS Agent</option>
+<option value="#8-4-prompt-architect-agent">  8.4. Prompt Architect Agent</option>
+<option value="#8-5-prompt-planning-agent">  8.5. Prompt Planning Agent</option>
+<option value="#8-6-prompt-developer-agent">  8.6. Prompt Developer Agent</option>
+<option value="#8-7-prompt-qa-agent">  8.7. Prompt QA Agent</option>
+<option value="#8-8-prompt-code-review-agent">  8.8. Prompt Code Review Agent</option>
+<option value="#8-9-prompt-sre-release-agent">  8.9. Prompt SRE/Release Agent</option>
+<option value="#9-template-thu-muc-tai-lieu-chuan">9. Template thư mục tài liệu chuẩn</option>
+<option value="#10-dashboard-quan-tri">10. Dashboard quản trị</option>
+<option value="#10-1-metrics-theo-flow">  10.1. Metrics theo flow</option>
+<option value="#10-2-dashboard-mermaid">  10.2. Dashboard Mermaid</option>
+<option value="#11-anti-pattern-can-tranh">11. Anti‑pattern cần tránh</option>
+<option value="#12-ap-dung-nhanh-trong-30-ngay">12. Áp dụng nhanh trong 30 ngày</option>
+<option value="#tuan-1-chuan-hoa-nen-tang">  Tuần 1 — Chuẩn hóa nền tảng</option>
+<option value="#tuan-2-pilot-1-feature-nho">  Tuần 2 — Pilot 1 feature nhỏ</option>
+<option value="#tuan-3-mo-rong-qa-ci-cd">  Tuần 3 — Mở rộng QA/CI/CD</option>
+<option value="#tuan-4-institutionalize">  Tuần 4 — Institutionalize</option>
+<option value="#13-mau-one-page-operating-rule-cho-team">13. Mẫu “one-page operating rule” cho team</option>
+<option value="#14-quy-trinh-xu-ly-thay-doi-scope">14. Quy trình xử lý thay đổi scope</option>
+<option value="#checklist-change-request">  Checklist change request</option>
+<option value="#15-quy-trinh-bug-hotfix">15. Quy trình bug/hotfix</option>
+<option value="#hotfix-checklist">  Hotfix checklist</option>
+<option value="#16-quy-trinh-danh-rieng-cho-feature-co-ai-llm-voice-agent">16. Quy trình dành riêng cho feature có AI/LLM/Voice/Agent</option>
+<option value="#16-1-diem-khac-biet">  16.1. Điểm khác biệt</option>
+<option value="#16-2-ai-eval-pipeline">  16.2. AI Eval pipeline</option>
+<option value="#16-3-ai-feature-checklist">  16.3. AI feature checklist</option>
+<option value="#17-mau-tich-hop-lark-github-ai-agent">17. Mẫu tích hợp Lark + GitHub + AI Agent</option>
+<option value="#17-1-flow-de-xuat">  17.1. Flow đề xuất</option>
+<option value="#17-2-quy-tac-thong-bao-lark">  17.2. Quy tắc thông báo Lark</option>
+<option value="#18-muc-truong-thanh-trien-khai">18. Mức trưởng thành triển khai</option>
+<option value="#19-checklist-tong-hop-dung-hang-ngay">19. Checklist tổng hợp dùng hằng ngày</option>
+<option value="#pm-po-daily-checklist">  PM/PO daily checklist</option>
+<option value="#tech-lead-daily-checklist">  Tech Lead daily checklist</option>
+<option value="#qa-daily-checklist">  QA daily checklist</option>
+<option value="#ai-agent-daily-checklist">  AI Agent daily checklist</option>
+<option value="#20-bo-tieu-chuan-khong-thoa-hiep">20. Bộ tiêu chuẩn “không thỏa hiệp”</option>
+<option value="#21-phu-luc-a-mau-status-report-ngan-gon">21. Phụ lục A — Mẫu status report ngắn gọn</option>
+<option value="#22-phu-luc-b-mau-risk-register">22. Phụ lục B — Mẫu risk register</option>
+<option value="#23-phu-luc-c-mau-traceability-matrix">23. Phụ lục C — Mẫu traceability matrix</option>
+<option value="#24-phu-luc-d-mau-ai-agent-evidence-log">24. Phụ lục D — Mẫu AI Agent evidence log</option>
+<option value="#25-ket-luan">25. Kết luận</option>
+<option value="#26-nguon-tham-khao-nen-doc-them">26. Nguồn tham khảo nên đọc thêm</option>
+<option value="#27-phu-luc-e-checklist-in-nhanh">  27. Phụ lục E — Checklist in nhanh</option>
+<option value="#truoc-khi-code">    Trước khi code</option>
+<option value="#truoc-khi-merge">    Trước khi merge</option>
+<option value="#truoc-khi-release">    Trước khi release</option>
+<option value="#sau-release-2">    Sau release</option></select><nav class="toc-nav" id="tocNav"><a class="toc-link level-1" href="#quy-trinh-phat-trien-phan-mem-ai-native-ket-hop-ai-agent-va-plugin-superpowers">Quy trình phát triển phần mềm AI‑Native kết hợp AI Agent và Plugin Superpowers</a>
+<a class="toc-link level-2" href="#0-cach-dung-tai-lieu-nay">0. Cách dùng tài liệu này</a>
+<a class="toc-link level-2" href="#1-tu-duy-cot-loi">1. Tư duy cốt lõi</a>
+<a class="toc-link level-2" href="#2-mo-hinh-tong-the-ai-native-software-development-operating-system">2. Mô hình tổng thể: AI‑Native Software Development Operating System</a>
+<a class="toc-link level-2" href="#3-vai-tro-con-nguoi-va-ai-agent">3. Vai trò con người và AI Agent</a>
+<a class="toc-link level-2" href="#4-quy-trinh-tong-the-theo-15-giai-doan">4. Quy trình tổng thể theo 15 giai đoạn</a>
+<a class="toc-link level-1" href="#phase-0-governance-constitution-va-setup-nen-tang">PHASE 0 — Governance, Constitution và Setup nền tảng</a>
+<a class="toc-link level-2" href="#0-1-muc-tieu">0.1. Mục tiêu</a>
+<a class="toc-link level-2" href="#0-2-input">0.2. Input</a>
+<a class="toc-link level-2" href="#0-3-output">0.3. Output</a>
+<a class="toc-link level-2" href="#0-4-engineering-constitution-mau">0.4. Engineering Constitution mẫu</a>
+<a class="toc-link level-2" href="#0-5-checklist-phase-0">0.5. Checklist Phase 0</a>
+<a class="toc-link level-2" href="#0-6-quality-gate-phase-0">0.6. Quality Gate Phase 0</a>
+<a class="toc-link level-1" href="#phase-1-intake-y-tuong-va-problem-framing">PHASE 1 — Intake, Ý tưởng và Problem Framing</a>
+<a class="toc-link level-2" href="#1-1-muc-tieu">1.1. Mục tiêu</a>
+<a class="toc-link level-2" href="#1-2-cong-viec-con-nguoi">1.2. Công việc con người</a>
+<a class="toc-link level-2" href="#1-3-cong-viec-ai-agent">1.3. Công việc AI Agent</a>
+<a class="toc-link level-2" href="#1-4-superpowers-nen-dung">1.4. Superpowers nên dùng</a>
+<a class="toc-link level-2" href="#1-5-template-problem-brief">1.5. Template Problem Brief</a>
+<a class="toc-link level-2" href="#1-6-checklist-phase-1">1.6. Checklist Phase 1</a>
+<a class="toc-link level-2" href="#1-7-gate-1-problem-clarity-gate">1.7. Gate 1 — Problem Clarity Gate</a>
+<a class="toc-link level-1" href="#phase-2-product-discovery-va-prd">PHASE 2 — Product Discovery và PRD</a>
+<a class="toc-link level-2" href="#2-1-muc-tieu">2.1. Mục tiêu</a>
+<a class="toc-link level-2" href="#2-2-so-do-prd">2.2. Sơ đồ PRD</a>
+<a class="toc-link level-2" href="#2-3-cong-viec-con-nguoi">2.3. Công việc con người</a>
+<a class="toc-link level-2" href="#2-4-cong-viec-ai-agent">2.4. Công việc AI Agent</a>
+<a class="toc-link level-2" href="#2-5-template-prd-chuan">2.5. Template PRD chuẩn</a>
+<a class="toc-link level-2" href="#2-6-checklist-prd">2.6. Checklist PRD</a>
+<a class="toc-link level-2" href="#2-7-gate-2-prd-definition-of-ready">2.7. Gate 2 — PRD Definition of Ready</a>
+<a class="toc-link level-1" href="#phase-3-srs-acceptance-criteria-va-requirement-engineering">PHASE 3 — SRS, Acceptance Criteria và Requirement Engineering</a>
+<a class="toc-link level-2" href="#3-1-muc-tieu">3.1. Mục tiêu</a>
+<a class="toc-link level-2" href="#3-2-mo-hinh-requirement">3.2. Mô hình requirement</a>
+<a class="toc-link level-2" href="#3-3-template-srs">3.3. Template SRS</a>
+<a class="toc-link level-2" href="#3-4-acceptance-criteria-chuan-given-when-then">3.4. Acceptance Criteria chuẩn Given‑When‑Then</a>
+<a class="toc-link level-2" href="#3-5-cong-viec-ai-agent">3.5. Công việc AI Agent</a>
+<a class="toc-link level-2" href="#3-6-checklist-srs">3.6. Checklist SRS</a>
+<a class="toc-link level-2" href="#3-7-gate-3-requirement-testability-gate">3.7. Gate 3 — Requirement Testability Gate</a>
+<a class="toc-link level-1" href="#phase-4-ux-ui-prototype-va-state-design">PHASE 4 — UX/UI, Prototype và State Design</a>
+<a class="toc-link level-2" href="#4-1-muc-tieu">4.1. Mục tiêu</a>
+<a class="toc-link level-2" href="#4-2-so-do-ux-tu-requirement-den-prototype">4.2. Sơ đồ UX từ requirement đến prototype</a>
+<a class="toc-link level-2" href="#4-3-state-matrix-bat-buoc">4.3. State Matrix bắt buộc</a>
+<a class="toc-link level-2" href="#4-4-cong-viec-ai-agent">4.4. Công việc AI Agent</a>
+<a class="toc-link level-2" href="#4-5-checklist-ux-ui">4.5. Checklist UX/UI</a>
+<a class="toc-link level-2" href="#4-6-gate-4-ux-handoff-gate">4.6. Gate 4 — UX Handoff Gate</a>
+<a class="toc-link level-1" href="#phase-5-architecture-adr-va-risk-design">PHASE 5 — Architecture, ADR và Risk Design</a>
+<a class="toc-link level-2" href="#5-1-muc-tieu">5.1. Mục tiêu</a>
+<a class="toc-link level-2" href="#5-2-so-do-kien-truc-logical">5.2. Sơ đồ kiến trúc logical</a>
+<a class="toc-link level-2" href="#5-3-adr-template">5.3. ADR template</a>
+<a class="toc-link level-2" href="#5-4-cong-viec-ai-agent">5.4. Công việc AI Agent</a>
+<a class="toc-link level-2" href="#5-5-threat-model-toi-thieu">5.5. Threat model tối thiểu</a>
+<a class="toc-link level-2" href="#5-6-checklist-architecture">5.6. Checklist Architecture</a>
+<a class="toc-link level-2" href="#5-7-gate-5-architecture-approval-gate">5.7. Gate 5 — Architecture Approval Gate</a>
+<a class="toc-link level-1" href="#phase-6-planning-wbs-risk-va-sprint-iteration-design">PHASE 6 — Planning, WBS, Risk và Sprint/Iteration Design</a>
+<a class="toc-link level-2" href="#6-1-muc-tieu">6.1. Mục tiêu</a>
+<a class="toc-link level-2" href="#6-2-so-do-breakdown">6.2. Sơ đồ breakdown</a>
+<a class="toc-link level-2" href="#6-3-task-template-cho-ai-agent">6.3. Task template cho AI Agent</a>
+<a class="toc-link level-2" href="#6-4-cong-viec-ai-agent">6.4. Công việc AI Agent</a>
+<a class="toc-link level-2" href="#6-5-checklist-planning">6.5. Checklist Planning</a>
+<a class="toc-link level-2" href="#6-6-gate-6-plan-readiness-gate">6.6. Gate 6 — Plan Readiness Gate</a>
+<a class="toc-link level-1" href="#phase-7-repo-environment-ci-cd-va-test-harness">PHASE 7 — Repo, Environment, CI/CD và Test Harness</a>
+<a class="toc-link level-2" href="#7-1-muc-tieu">7.1. Mục tiêu</a>
+<a class="toc-link level-2" href="#7-2-so-do-ci-cd-baseline">7.2. Sơ đồ CI/CD baseline</a>
+<a class="toc-link level-2" href="#7-3-branch-strategy-mau">7.3. Branch strategy mẫu</a>
+<a class="toc-link level-2" href="#7-4-repo-structure-mau">7.4. Repo structure mẫu</a>
+<a class="toc-link level-2" href="#7-5-agents-md-mau">7.5. AGENTS.md mẫu</a>
+<a class="toc-link level-2" href="#7-6-checklist-phase-7">7.6. Checklist Phase 7</a>
+<a class="toc-link level-2" href="#7-7-gate-7-automation-baseline-gate">7.7. Gate 7 — Automation Baseline Gate</a>
+<a class="toc-link level-1" href="#phase-8-implementation-voi-ai-agent-superpowers-va-tdd">PHASE 8 — Implementation với AI Agent, Superpowers và TDD</a>
+<a class="toc-link level-2" href="#8-1-muc-tieu">8.1. Mục tiêu</a>
+<a class="toc-link level-2" href="#8-2-vong-lap-superpowers-implementation">8.2. Vòng lặp Superpowers Implementation</a>
+<a class="toc-link level-2" href="#8-3-prompt-giao-task-cho-ai-agent">8.3. Prompt giao task cho AI Agent</a>
+<a class="toc-link level-2" href="#8-4-superpowers-skill-mapping">8.4. Superpowers skill mapping</a>
+<a class="toc-link level-2" href="#8-5-checklist-implementation">8.5. Checklist Implementation</a>
+<a class="toc-link level-2" href="#8-6-gate-8-developer-done-gate">8.6. Gate 8 — Developer Done Gate</a>
+<a class="toc-link level-1" href="#phase-9-code-review-security-review-va-merge-control">PHASE 9 — Code Review, Security Review và Merge Control</a>
+<a class="toc-link level-2" href="#9-1-muc-tieu">9.1. Mục tiêu</a>
+<a class="toc-link level-2" href="#9-2-vong-review-nhieu-lop">9.2. Vòng review nhiều lớp</a>
+<a class="toc-link level-2" href="#9-3-pr-template-chuan">9.3. PR template chuẩn</a>
+<a class="toc-link level-2" href="#9-4-ai-review-agent-checklist">9.4. AI Review Agent checklist</a>
+<a class="toc-link level-2" href="#9-5-merge-policy">9.5. Merge policy</a>
+<a class="toc-link level-2" href="#9-6-gate-9-merge-gate">9.6. Gate 9 — Merge Gate</a>
+<a class="toc-link level-1" href="#phase-10-qa-regression-e2e-va-quality-engineering">PHASE 10 — QA, Regression, E2E và Quality Engineering</a>
+<a class="toc-link level-2" href="#10-1-muc-tieu">10.1. Mục tiêu</a>
+<a class="toc-link level-2" href="#10-2-test-pyramid-mo-rong">10.2. Test pyramid mở rộng</a>
+<a class="toc-link level-2" href="#10-3-loai-test-bat-buoc">10.3. Loại test bắt buộc</a>
+<a class="toc-link level-2" href="#10-4-bug-report-template">10.4. Bug report template</a>
+<a class="toc-link level-2" href="#10-5-ai-qa-agent-prompt">10.5. AI QA Agent prompt</a>
+<a class="toc-link level-2" href="#10-6-checklist-qa">10.6. Checklist QA</a>
+<a class="toc-link level-2" href="#10-7-gate-10-qa-sign-off-gate">10.7. Gate 10 — QA Sign-off Gate</a>
+<a class="toc-link level-1" href="#phase-11-uat-beta-va-feedback-loop">PHASE 11 — UAT, Beta và Feedback Loop</a>
+<a class="toc-link level-2" href="#11-1-muc-tieu">11.1. Mục tiêu</a>
+<a class="toc-link level-2" href="#11-2-beta-loop">11.2. Beta loop</a>
+<a class="toc-link level-2" href="#11-3-feedback-classification">11.3. Feedback classification</a>
+<a class="toc-link level-2" href="#11-4-checklist-uat-beta">11.4. Checklist UAT/Beta</a>
+<a class="toc-link level-2" href="#11-5-gate-11-go-no-go-gate">11.5. Gate 11 — Go/No-Go Gate</a>
+<a class="toc-link level-1" href="#phase-12-release-deployment-va-change-management">PHASE 12 — Release, Deployment và Change Management</a>
+<a class="toc-link level-2" href="#12-1-muc-tieu">12.1. Mục tiêu</a>
+<a class="toc-link level-2" href="#12-2-release-flow">12.2. Release flow</a>
+<a class="toc-link level-2" href="#12-3-release-checklist">12.3. Release checklist</a>
+<a class="toc-link level-2" href="#12-4-release-note-template">12.4. Release note template</a>
+<a class="toc-link level-2" href="#12-5-gate-12-release-gate">12.5. Gate 12 — Release Gate</a>
+<a class="toc-link level-1" href="#phase-13-monitoring-incident-va-rollback">PHASE 13 — Monitoring, Incident và Rollback</a>
+<a class="toc-link level-2" href="#13-1-muc-tieu">13.1. Mục tiêu</a>
+<a class="toc-link level-2" href="#13-2-incident-severity">13.2. Incident severity</a>
+<a class="toc-link level-2" href="#13-3-runbook-template">13.3. Runbook template</a>
+<a class="toc-link level-2" href="#13-4-postmortem-template">13.4. Postmortem template</a>
+<a class="toc-link level-2" href="#13-5-ai-agent-trong-van-hanh">13.5. AI Agent trong vận hành</a>
+<a class="toc-link level-2" href="#13-6-gate-13-incident-closure-gate">13.6. Gate 13 — Incident Closure Gate</a>
+<a class="toc-link level-1" href="#phase-14-retrospective-knowledge-base-va-continuous-improvement">PHASE 14 — Retrospective, Knowledge Base và Continuous Improvement</a>
+<a class="toc-link level-2" href="#14-1-muc-tieu">14.1. Mục tiêu</a>
+<a class="toc-link level-2" href="#14-2-retro-questions">14.2. Retro questions</a>
+<a class="toc-link level-2" href="#14-3-checklist-phase-14">14.3. Checklist Phase 14</a>
+<a class="toc-link level-1" href="#5-quality-gate-matrix-toan-quy-trinh">5. Quality Gate Matrix toàn quy trình</a>
+<a class="toc-link level-1" href="#6-definition-of-ready-va-definition-of-done">6. Definition of Ready và Definition of Done</a>
+<a class="toc-link level-2" href="#6-1-definition-of-ready-cho-feature">6.1. Definition of Ready cho feature</a>
+<a class="toc-link level-2" href="#6-2-definition-of-ready-cho-task">6.2. Definition of Ready cho task</a>
+<a class="toc-link level-2" href="#6-3-definition-of-done-cho-task">6.3. Definition of Done cho task</a>
+<a class="toc-link level-2" href="#6-4-definition-of-done-cho-release">6.4. Definition of Done cho release</a>
+<a class="toc-link level-1" href="#7-mo-hinh-ai-agent-plugin-superpowers-trong-thuc-chien">7. Mô hình AI Agent + Plugin Superpowers trong thực chiến</a>
+<a class="toc-link level-2" href="#7-1-agent-operating-loop">7.1. Agent Operating Loop</a>
+<a class="toc-link level-2" href="#7-2-quyen-han-cua-ai-agent">7.2. Quyền hạn của AI Agent</a>
+<a class="toc-link level-2" href="#7-3-plugin-superpowers-nen-nam-o-dau">7.3. Plugin Superpowers nên nằm ở đâu?</a>
+<a class="toc-link level-2" href="#7-4-khi-nao-nen-dung-nhieu-sub-agent">7.4. Khi nào nên dùng nhiều sub‑agent?</a>
+<a class="toc-link level-1" href="#8-bo-prompt-chuan-cho-tung-vai-tro-ai-agent">8. Bộ prompt chuẩn cho từng vai trò AI Agent</a>
+<a class="toc-link level-2" href="#8-1-prompt-product-discovery-agent">8.1. Prompt Product Discovery Agent</a>
+<a class="toc-link level-2" href="#8-2-prompt-prd-agent">8.2. Prompt PRD Agent</a>
+<a class="toc-link level-2" href="#8-3-prompt-srs-agent">8.3. Prompt SRS Agent</a>
+<a class="toc-link level-2" href="#8-4-prompt-architect-agent">8.4. Prompt Architect Agent</a>
+<a class="toc-link level-2" href="#8-5-prompt-planning-agent">8.5. Prompt Planning Agent</a>
+<a class="toc-link level-2" href="#8-6-prompt-developer-agent">8.6. Prompt Developer Agent</a>
+<a class="toc-link level-2" href="#8-7-prompt-qa-agent">8.7. Prompt QA Agent</a>
+<a class="toc-link level-2" href="#8-8-prompt-code-review-agent">8.8. Prompt Code Review Agent</a>
+<a class="toc-link level-2" href="#8-9-prompt-sre-release-agent">8.9. Prompt SRE/Release Agent</a>
+<a class="toc-link level-1" href="#9-template-thu-muc-tai-lieu-chuan">9. Template thư mục tài liệu chuẩn</a>
+<a class="toc-link level-1" href="#10-dashboard-quan-tri">10. Dashboard quản trị</a>
+<a class="toc-link level-2" href="#10-1-metrics-theo-flow">10.1. Metrics theo flow</a>
+<a class="toc-link level-2" href="#10-2-dashboard-mermaid">10.2. Dashboard Mermaid</a>
+<a class="toc-link level-1" href="#11-anti-pattern-can-tranh">11. Anti‑pattern cần tránh</a>
+<a class="toc-link level-1" href="#12-ap-dung-nhanh-trong-30-ngay">12. Áp dụng nhanh trong 30 ngày</a>
+<a class="toc-link level-2" href="#tuan-1-chuan-hoa-nen-tang">Tuần 1 — Chuẩn hóa nền tảng</a>
+<a class="toc-link level-2" href="#tuan-2-pilot-1-feature-nho">Tuần 2 — Pilot 1 feature nhỏ</a>
+<a class="toc-link level-2" href="#tuan-3-mo-rong-qa-ci-cd">Tuần 3 — Mở rộng QA/CI/CD</a>
+<a class="toc-link level-2" href="#tuan-4-institutionalize">Tuần 4 — Institutionalize</a>
+<a class="toc-link level-1" href="#13-mau-one-page-operating-rule-cho-team">13. Mẫu “one-page operating rule” cho team</a>
+<a class="toc-link level-1" href="#14-quy-trinh-xu-ly-thay-doi-scope">14. Quy trình xử lý thay đổi scope</a>
+<a class="toc-link level-2" href="#checklist-change-request">Checklist change request</a>
+<a class="toc-link level-1" href="#15-quy-trinh-bug-hotfix">15. Quy trình bug/hotfix</a>
+<a class="toc-link level-2" href="#hotfix-checklist">Hotfix checklist</a>
+<a class="toc-link level-1" href="#16-quy-trinh-danh-rieng-cho-feature-co-ai-llm-voice-agent">16. Quy trình dành riêng cho feature có AI/LLM/Voice/Agent</a>
+<a class="toc-link level-2" href="#16-1-diem-khac-biet">16.1. Điểm khác biệt</a>
+<a class="toc-link level-2" href="#16-2-ai-eval-pipeline">16.2. AI Eval pipeline</a>
+<a class="toc-link level-2" href="#16-3-ai-feature-checklist">16.3. AI feature checklist</a>
+<a class="toc-link level-1" href="#17-mau-tich-hop-lark-github-ai-agent">17. Mẫu tích hợp Lark + GitHub + AI Agent</a>
+<a class="toc-link level-2" href="#17-1-flow-de-xuat">17.1. Flow đề xuất</a>
+<a class="toc-link level-2" href="#17-2-quy-tac-thong-bao-lark">17.2. Quy tắc thông báo Lark</a>
+<a class="toc-link level-1" href="#18-muc-truong-thanh-trien-khai">18. Mức trưởng thành triển khai</a>
+<a class="toc-link level-1" href="#19-checklist-tong-hop-dung-hang-ngay">19. Checklist tổng hợp dùng hằng ngày</a>
+<a class="toc-link level-2" href="#pm-po-daily-checklist">PM/PO daily checklist</a>
+<a class="toc-link level-2" href="#tech-lead-daily-checklist">Tech Lead daily checklist</a>
+<a class="toc-link level-2" href="#qa-daily-checklist">QA daily checklist</a>
+<a class="toc-link level-2" href="#ai-agent-daily-checklist">AI Agent daily checklist</a>
+<a class="toc-link level-1" href="#20-bo-tieu-chuan-khong-thoa-hiep">20. Bộ tiêu chuẩn “không thỏa hiệp”</a>
+<a class="toc-link level-1" href="#21-phu-luc-a-mau-status-report-ngan-gon">21. Phụ lục A — Mẫu status report ngắn gọn</a>
+<a class="toc-link level-1" href="#22-phu-luc-b-mau-risk-register">22. Phụ lục B — Mẫu risk register</a>
+<a class="toc-link level-1" href="#23-phu-luc-c-mau-traceability-matrix">23. Phụ lục C — Mẫu traceability matrix</a>
+<a class="toc-link level-1" href="#24-phu-luc-d-mau-ai-agent-evidence-log">24. Phụ lục D — Mẫu AI Agent evidence log</a>
+<a class="toc-link level-1" href="#25-ket-luan">25. Kết luận</a>
+<a class="toc-link level-1" href="#26-nguon-tham-khao-nen-doc-them">26. Nguồn tham khảo nên đọc thêm</a>
+<a class="toc-link level-2" href="#27-phu-luc-e-checklist-in-nhanh">27. Phụ lục E — Checklist in nhanh</a></nav></aside><main class="content" id="content"><h1 id="quy-trinh-phat-trien-phan-mem-ai-native-ket-hop-ai-agent-va-plugin-superpowers"><a class="heading-anchor" href="#quy-trinh-phat-trien-phan-mem-ai-native-ket-hop-ai-agent-va-plugin-superpowers" aria-label="Liên kết tới mục này">#</a>Quy trình phát triển phần mềm AI‑Native kết hợp AI Agent và Plugin Superpowers</h1>
+<blockquote>
+<p><strong>Phiên bản:</strong> 1.0<br>
+<strong>Ngày:</strong> 25/05/2026<br>
+<strong>Ngôn ngữ:</strong> Tiếng Việt<br>
+<strong>Mục tiêu:</strong> Xây dựng một quy trình phát triển phần mềm chuẩn, có thể áp dụng cho đội R&amp;D/Product/QA/DevOps, kết hợp <strong>Spec‑Driven Development</strong>, <strong>AI Agent</strong>, <strong>Plugin Superpowers</strong>, GitHub/Lark/CI/CD/Test Automation để tăng tốc phát triển nhưng vẫn kiểm soát chất lượng, rủi ro và ownership.</p>
+</blockquote>
+<hr>
+<h2 id="0-cach-dung-tai-lieu-nay"><a class="heading-anchor" href="#0-cach-dung-tai-lieu-nay" aria-label="Liên kết tới mục này">#</a>0. Cách dùng tài liệu này</h2>
+<p>Tài liệu này dùng để:</p>
+<ol>
+<li>Thiết kế quy trình phát triển phần mềm chuẩn cho công ty.</li>
+<li>Huấn luyện PM/PO/BA/UX/Dev/QA/DevOps/SRE về cách làm việc với AI Agent.</li>
+<li>Tạo template cho từng giai đoạn: từ ý tưởng → đặc tả → thiết kế → kiến trúc → plan → task → code → test → release → vận hành.</li>
+<li>Thiết lập <strong>quality gate</strong> để tránh các lỗi thường gặp: thiếu spec, đổi yêu cầu liên tục, bàn giao mơ hồ, QA phát hiện muộn, claim sản xuất thiếu tài liệu, ownership chồng chéo.</li>
+<li>Biến AI Agent thành “nhân sự số” có vai trò, nhiệm vụ, quyền hạn, KPI và cơ chế giải trình rõ ràng.</li>
+</ol>
+<blockquote>
+<p>Các sơ đồ trong tài liệu dùng <strong>Mermaid diagram</strong>. Có thể xem trực tiếp trên GitHub, GitLab, nhiều Markdown viewer hiện đại, hoặc VSCode có Mermaid extension.</p>
+</blockquote>
+<hr>
+<h2 id="1-tu-duy-cot-loi"><a class="heading-anchor" href="#1-tu-duy-cot-loi" aria-label="Liên kết tới mục này">#</a>1. Tư duy cốt lõi</h2>
+<h3 id="1-1-nguyen-ly-so-1-spec-la-source-of-truth-code-la-ket-qua"><a class="heading-anchor" href="#1-1-nguyen-ly-so-1-spec-la-source-of-truth-code-la-ket-qua" aria-label="Liên kết tới mục này">#</a>1.1. Nguyên lý số 1: Spec là “source of truth”, code là kết quả</h3>
+<p>Trong mô hình truyền thống, nhiều team bắt đầu bằng code, sau đó mới viết lại tài liệu. Cách này tạo ra 4 lỗi lớn:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Lỗi</th>
+<th>Hậu quả</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Spec mơ hồ</td>
+<td>Dev hiểu khác, QA test khác, PM kỳ vọng khác</td>
+</tr>
+<tr>
+<td>Code đi trước yêu cầu</td>
+<td>Dễ build sai thứ khách hàng cần</td>
+</tr>
+<tr>
+<td>Test viết muộn</td>
+<td>Lỗi phát hiện cuối phase, chi phí sửa cao</td>
+</tr>
+<tr>
+<td>Tài liệu sau release mới viết</td>
+<td>Bàn giao vận hành/sản xuất/support thiếu chuẩn</td>
+</tr>
+</tbody>
+</table></div>
+<p>Trong mô hình AI‑Native, phải đảo lại:</p>
+<div class="mermaid">flowchart LR
+    A[&quot;Ý tưởng / Vấn đề&quot;] --&gt; B[&quot;PRD: What &amp; Why&quot;]
+    B --&gt; C[&quot;SRS: Functional / Non-functional Requirements&quot;]
+    C --&gt; D[&quot;UX Flow + Prototype&quot;]
+    D --&gt; E[&quot;Architecture + ADR&quot;]
+    E --&gt; F[&quot;Plan + WBS + Risk&quot;]
+    F --&gt; G[&quot;Task nhỏ có test&quot;]
+    G --&gt; H[&quot;AI Agent triển khai code&quot;]
+    H --&gt; I[&quot;CI/CD + Review + QA&quot;]
+    I --&gt; J[&quot;Release + Monitor&quot;]
+</div>
+<p><strong>Công thức vận hành:</strong></p>
+<blockquote>
+<p>Không có spec rõ → không code.<br>
+Không có acceptance criteria → không nhận task.<br>
+Không có test → không merge.<br>
+Không có monitoring/rollback → không release.<br>
+Không có postmortem/learning → không đóng dự án.</p>
+</blockquote>
+<hr>
+<h3 id="1-2-nguyen-ly-so-2-ai-agent-khong-thay-con-nguoi-quyet-dinh-ai-agent-tang-toc-vong-lap"><a class="heading-anchor" href="#1-2-nguyen-ly-so-2-ai-agent-khong-thay-con-nguoi-quyet-dinh-ai-agent-tang-toc-vong-lap" aria-label="Liên kết tới mục này">#</a>1.2. Nguyên lý số 2: AI Agent không thay con người quyết định, AI Agent tăng tốc vòng lặp</h3>
+<p>AI Agent mạnh nhất khi được giao:</p>
+<ul>
+<li>Đọc tài liệu, repo, log, issue.</li>
+<li>Tóm tắt và chuẩn hóa yêu cầu.</li>
+<li>Sinh test case, task breakdown, code scaffold.</li>
+<li>Thực hiện task nhỏ, có tiêu chuẩn kiểm chứng.</li>
+<li>Tự chạy test, tự sửa, tự review trước khi gửi người.</li>
+<li>Phát hiện thiếu thông tin và yêu cầu làm rõ.</li>
+<li>Duy trì traceability giữa requirement → task → PR → test → release.</li>
+</ul>
+<p>AI Agent yếu nếu bị giao:</p>
+<ul>
+<li>Một mục tiêu quá rộng nhưng thiếu context.</li>
+<li>Một yêu cầu chưa có tiêu chuẩn đúng/sai.</li>
+<li>Một task không có đầu vào/đầu ra.</li>
+<li>Một hệ thống không có test, log, data, rule.</li>
+<li>Một quy trình không có quyền hạn, gate, trách nhiệm.</li>
+</ul>
+<p><strong>Vai trò mới của kỹ sư giỏi:</strong></p>
+<div class="mermaid">flowchart TB
+    Old[&quot;Kỹ sư truyền thống\nTự viết phần lớn code&quot;] --&gt; New[&quot;Kỹ sư AI‑Native\nThiết kế môi trường, spec, test, gate, feedback loop&quot;]
+    New --&gt; S1[&quot;Đặc tả ý định rõ&quot;]
+    New --&gt; S2[&quot;Tạo context cho agent&quot;]
+    New --&gt; S3[&quot;Thiết kế test/eval&quot;]
+    New --&gt; S4[&quot;Review kiến trúc &amp; rủi ro&quot;]
+    New --&gt; S5[&quot;Tối ưu loop tự sửa&quot;]
+</div>
+<hr>
+<h3 id="1-3-nguyen-ly-so-3-superpowers-la-lop-ky-luat-ky-thuat-cho-coding-agent"><a class="heading-anchor" href="#1-3-nguyen-ly-so-3-superpowers-la-lop-ky-luat-ky-thuat-cho-coding-agent" aria-label="Liên kết tới mục này">#</a>1.3. Nguyên lý số 3: Superpowers là lớp “kỷ luật kỹ thuật” cho coding agent</h3>
+<p>Trong tài liệu này, <strong>Plugin Superpowers</strong> được hiểu là lớp kỹ năng/phương pháp cho AI coding agent. Nó ép agent không nhảy ngay vào code mà phải đi qua các bước như:</p>
+<ul>
+<li>Brainstorming.</li>
+<li>Làm rõ mục tiêu.</li>
+<li>Viết design/spec.</li>
+<li>Tạo branch/worktree riêng.</li>
+<li>Viết implementation plan.</li>
+<li>Chia task nhỏ.</li>
+<li>TDD: Red → Green → Refactor.</li>
+<li>Request/receive code review.</li>
+<li>Debug có hệ thống.</li>
+<li>Verify before completion.</li>
+<li>Kết thúc development branch đúng chuẩn.</li>
+</ul>
+<p><strong>Cách hiểu thực dụng:</strong></p>
+<div class="mermaid">flowchart LR
+    Prompt[&quot;Người giao việc&quot;] --&gt; Agent[&quot;AI Coding Agent&quot;]
+    Agent --&gt; SP[&quot;Superpowers Skills&quot;]
+    SP --&gt; B[&quot;Brainstorming&quot;]
+    SP --&gt; P[&quot;Writing Plans&quot;]
+    SP --&gt; T[&quot;TDD&quot;]
+    SP --&gt; R[&quot;Code Review&quot;]
+    SP --&gt; D[&quot;Systematic Debugging&quot;]
+    SP --&gt; F[&quot;Finish Branch&quot;]
+    B --&gt; Repo[&quot;Repo + PR + CI/CD&quot;]
+    P --&gt; Repo
+    T --&gt; Repo
+    R --&gt; Repo
+    D --&gt; Repo
+    F --&gt; Repo
+</div>
+<p>Superpowers không thay thế quy trình công ty. Nó là <strong>engine kỷ luật ở tầng thực thi coding</strong>. Quy trình công ty vẫn cần PRD, SRS, kiến trúc, QA, release, vận hành, security, governance.</p>
+<hr>
+<h2 id="2-mo-hinh-tong-the-ai-native-software-development-operating-system"><a class="heading-anchor" href="#2-mo-hinh-tong-the-ai-native-software-development-operating-system" aria-label="Liên kết tới mục này">#</a>2. Mô hình tổng thể: AI‑Native Software Development Operating System</h2>
+<h3 id="2-1-so-do-tong-quan"><a class="heading-anchor" href="#2-1-so-do-tong-quan" aria-label="Liên kết tới mục này">#</a>2.1. Sơ đồ tổng quan</h3>
+<div class="mermaid">flowchart TB
+    subgraph Business[&quot;Business / Product Layer&quot;]
+        I[&quot;Idea / Customer Pain / Strategy&quot;]
+        PRD[&quot;PRD&quot;]
+        KPI[&quot;Business KPI / Product KPI&quot;]
+    end
+
+    subgraph Spec[&quot;Specification Layer&quot;]
+        SRS[&quot;SRS&quot;]
+        UX[&quot;UX Flow / Prototype&quot;]
+        AC[&quot;Acceptance Criteria&quot;]
+        NFR[&quot;Non-functional Requirements&quot;]
+    end
+
+    subgraph Eng[&quot;Engineering Layer&quot;]
+        ARCH[&quot;Architecture / ADR&quot;]
+        PLAN[&quot;Plan / WBS / Risk&quot;]
+        TASK[&quot;Atomic Tasks&quot;]
+        CODE[&quot;Code / Config / Migration&quot;]
+    end
+
+    subgraph QA[&quot;Quality Layer&quot;]
+        TEST[&quot;Unit / Integration / E2E / Performance / Security&quot;]
+        EVAL[&quot;AI Eval / Scenario Eval&quot;]
+        UAT[&quot;UAT / Beta Feedback&quot;]
+    end
+
+    subgraph Ops[&quot;Operations Layer&quot;]
+        REL[&quot;Release / Deployment&quot;]
+        MON[&quot;Monitoring / Alert&quot;]
+        INC[&quot;Incident / Rollback&quot;]
+        LEARN[&quot;Postmortem / Knowledge Base&quot;]
+    end
+
+    subgraph AI[&quot;AI Agent System&quot;]
+        ORCH[&quot;AI Orchestrator&quot;]
+        BA[&quot;BA Agent&quot;]
+        PM[&quot;PM Agent&quot;]
+        UXA[&quot;UX Agent&quot;]
+        ARC[&quot;Architect Agent&quot;]
+        DEV[&quot;Developer Agent&quot;]
+        QAAG[&quot;QA Agent&quot;]
+        SEC[&quot;Security Agent&quot;]
+        SRE[&quot;SRE Agent&quot;]
+        DOC[&quot;Documentation Agent&quot;]
+    end
+
+    I --&gt; PRD --&gt; SRS --&gt; UX --&gt; ARCH --&gt; PLAN --&gt; TASK --&gt; CODE --&gt; TEST --&gt; UAT --&gt; REL --&gt; MON --&gt; LEARN
+    KPI --&gt; PRD
+    AC --&gt; TEST
+    NFR --&gt; ARCH
+    ORCH --&gt; BA
+    ORCH --&gt; PM
+    ORCH --&gt; UXA
+    ORCH --&gt; ARC
+    ORCH --&gt; DEV
+    ORCH --&gt; QAAG
+    ORCH --&gt; SEC
+    ORCH --&gt; SRE
+    ORCH --&gt; DOC
+    BA -.hỗ trợ.-&gt; PRD
+    PM -.hỗ trợ.-&gt; PLAN
+    UXA -.hỗ trợ.-&gt; UX
+    ARC -.hỗ trợ.-&gt; ARCH
+    DEV -.hỗ trợ.-&gt; CODE
+    QAAG -.hỗ trợ.-&gt; TEST
+    SEC -.hỗ trợ.-&gt; TEST
+    SRE -.hỗ trợ.-&gt; MON
+    DOC -.hỗ trợ.-&gt; LEARN
+</div>
+<hr>
+<h3 id="2-2-stack-cong-cu-khuyen-nghi"><a class="heading-anchor" href="#2-2-stack-cong-cu-khuyen-nghi" aria-label="Liên kết tới mục này">#</a>2.2. Stack công cụ khuyến nghị</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Lớp</th>
+<th>Công cụ</th>
+<th>Vai trò</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Collaboration</td>
+<td>Lark, Chat, Meeting, Docs</td>
+<td>Trao đổi, thông báo, decision log</td>
+</tr>
+<tr>
+<td>Source of Truth</td>
+<td>GitHub, GitLab, Lark Docs, Notion</td>
+<td>Repo, PR, issue, specs, decision</td>
+</tr>
+<tr>
+<td>Spec‑Driven</td>
+<td>GitHub Spec Kit hoặc template nội bộ</td>
+<td>Constitution, specify, plan, tasks, implement</td>
+</tr>
+<tr>
+<td>Agentic Coding</td>
+<td>Codex, Claude Code, Cursor, Copilot, Gemini CLI</td>
+<td>Coding agent</td>
+</tr>
+<tr>
+<td>Superpowers</td>
+<td>Superpowers plugin/skills</td>
+<td>Kỷ luật coding: plan, TDD, review, debug</td>
+</tr>
+<tr>
+<td>Product/Project</td>
+<td>Lark Base/Jira/Linear/GitHub Projects</td>
+<td>Epic, story, sprint, backlog, status</td>
+</tr>
+<tr>
+<td>Design</td>
+<td>Figma</td>
+<td>UX/UI, design system, prototype</td>
+</tr>
+<tr>
+<td>CI/CD</td>
+<td>GitHub Actions/GitLab CI/Jenkins</td>
+<td>Build, test, scan, deploy</td>
+</tr>
+<tr>
+<td>Test</td>
+<td>Playwright, Cypress, Appium, Detox, pytest, JUnit</td>
+<td>Automation test</td>
+</tr>
+<tr>
+<td>Quality/Security</td>
+<td>SonarQube, CodeQL, Snyk, Semgrep</td>
+<td>Static analysis, dependency, security</td>
+</tr>
+<tr>
+<td>Observability</td>
+<td>Grafana, Prometheus, Sentry, Datadog, ELK</td>
+<td>Logs, metrics, traces, crash</td>
+</tr>
+<tr>
+<td>Knowledge Base</td>
+<td>Lark Wiki/Docs, repo <code>/docs</code></td>
+<td>Onboarding, lessons learned, architecture memory</td>
+</tr>
+</tbody>
+</table></div>
+<hr>
+<h3 id="2-3-mo-hinh-du-lieu-xuyen-suot"><a class="heading-anchor" href="#2-3-mo-hinh-du-lieu-xuyen-suot" aria-label="Liên kết tới mục này">#</a>2.3. Mô hình dữ liệu xuyên suốt</h3>
+<p>Mọi việc phải trace được từ business tới code.</p>
+<div class="mermaid">flowchart LR
+    Goal[&quot;Business Goal&quot;] --&gt; Epic[&quot;Epic&quot;]
+    Epic --&gt; Req[&quot;Requirement&quot;]
+    Req --&gt; AC[&quot;Acceptance Criteria&quot;]
+    Req --&gt; Risk[&quot;Risk&quot;]
+    Req --&gt; UX[&quot;UX Flow&quot;]
+    Req --&gt; ADR[&quot;Architecture Decision Record&quot;]
+    AC --&gt; TC[&quot;Test Case&quot;]
+    ADR --&gt; Task[&quot;Engineering Task&quot;]
+    UX --&gt; Task
+    Task --&gt; PR[&quot;Pull Request&quot;]
+    PR --&gt; Commit[&quot;Commit&quot;]
+    PR --&gt; TestRun[&quot;CI Test Run&quot;]
+    TestRun --&gt; Release[&quot;Release&quot;]
+    Release --&gt; Metric[&quot;Product/Tech Metrics&quot;]
+    Metric --&gt; Learn[&quot;Lesson Learned&quot;]
+    Learn --&gt; Goal
+</div>
+<p><strong>Mỗi feature phải có ID xuyên suốt:</strong></p>
+<pre><code class="language-text">FEATURE-ID: VA-VOICE-INTERRUPT-001
+Epic: Trợ lý ảo hỗ trợ ngắt lời khi đang nói
+PRD: /docs/prd/va-voice-interrupt.md
+SRS: /docs/srs/va-voice-interrupt.md
+UX: /docs/ux/va-voice-interrupt-flow.md
+ADR: /docs/adr/ADR-004-barage-in-vad.md
+Tasks: /docs/tasks/va-voice-interrupt-tasks.md
+Tests: /tests/scenarios/voice_interrupt/
+PRs: #1242, #1251, #1260
+Release: v2.3.0-beta.2
+</code></pre>
+<hr>
+<h2 id="3-vai-tro-con-nguoi-va-ai-agent"><a class="heading-anchor" href="#3-vai-tro-con-nguoi-va-ai-agent" aria-label="Liên kết tới mục này">#</a>3. Vai trò con người và AI Agent</h2>
+<h3 id="3-1-vai-tro-con-nguoi"><a class="heading-anchor" href="#3-1-vai-tro-con-nguoi" aria-label="Liên kết tới mục này">#</a>3.1. Vai trò con người</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Vai trò</th>
+<th>Trách nhiệm chính</th>
+<th>Không được bỏ qua</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sponsor/Leadership</td>
+<td>Định hướng, ưu tiên, ngân sách, quyết định trade-off lớn</td>
+<td>Không giao mục tiêu mơ hồ rồi yêu cầu team tự hiểu</td>
+</tr>
+<tr>
+<td>PM/PO</td>
+<td>Business goal, roadmap, PRD, scope, KPI, stakeholder alignment</td>
+<td>Không cho dev code khi chưa có acceptance criteria</td>
+</tr>
+<tr>
+<td>BA</td>
+<td>Làm rõ nghiệp vụ, SRS, use case, edge case</td>
+<td>Không để requirement ở dạng nói miệng</td>
+</tr>
+<tr>
+<td>UX/UI</td>
+<td>User journey, prototype, design system, state/error/empty/loading</td>
+<td>Không chỉ vẽ màn hình happy path</td>
+</tr>
+<tr>
+<td>Tech Lead/Architect</td>
+<td>Architecture, ADR, integration, risk, NFR</td>
+<td>Không để agent tự chọn kiến trúc lớn</td>
+</tr>
+<tr>
+<td>Developer</td>
+<td>Implement, unit test, code review, refactor</td>
+<td>Không merge khi test fail</td>
+</tr>
+<tr>
+<td>QA/Test Engineer</td>
+<td>Test strategy, test case, automation, regression</td>
+<td>Không chỉ test cuối kỳ</td>
+</tr>
+<tr>
+<td>DevOps/SRE</td>
+<td>CI/CD, observability, rollback, incident response</td>
+<td>Không release nếu thiếu monitoring</td>
+</tr>
+<tr>
+<td>Security</td>
+<td>Threat model, secure coding, dependency scan</td>
+<td>Không xem security như việc sau cùng</td>
+</tr>
+<tr>
+<td>Documentation Owner</td>
+<td>Handover, release notes, runbook, onboarding docs</td>
+<td>Không để tài liệu bị lệch so với code</td>
+</tr>
+</tbody>
+</table></div>
+<hr>
+<h3 id="3-2-vai-tro-ai-agent"><a class="heading-anchor" href="#3-2-vai-tro-ai-agent" aria-label="Liên kết tới mục này">#</a>3.2. Vai trò AI Agent</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>AI Agent</th>
+<th>Vai trò như “nhân sự số”</th>
+<th>Input</th>
+<th>Output</th>
+<th>KPI</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Product Discovery Agent</td>
+<td>Khai phá vấn đề, phân tích user pain</td>
+<td>Ý tưởng, phỏng vấn, feedback</td>
+<td>Problem brief, hypothesis, KPI</td>
+<td>Tỷ lệ yêu cầu được làm rõ trước PRD</td>
+</tr>
+<tr>
+<td>PRD Agent</td>
+<td>Tạo PRD từ goal</td>
+<td>Business goal, persona, constraints</td>
+<td>PRD, scope, out-of-scope</td>
+<td>PRD đạt DoR ngay lần 1</td>
+</tr>
+<tr>
+<td>BA/SRS Agent</td>
+<td>Chuyển PRD thành SRS</td>
+<td>PRD, domain rules</td>
+<td>SRS, use case, AC</td>
+<td>Số ambiguity giảm</td>
+</tr>
+<tr>
+<td>UX Agent</td>
+<td>Sinh user flow, trạng thái màn hình</td>
+<td>SRS, user journey</td>
+<td>UX flow, state matrix</td>
+<td>Ít missing state</td>
+</tr>
+<tr>
+<td>Architect Agent</td>
+<td>Đề xuất kiến trúc, ADR, risk</td>
+<td>SRS, NFR, repo context</td>
+<td>Architecture doc, ADR</td>
+<td>Ít architectural rework</td>
+</tr>
+<tr>
+<td>Planning Agent</td>
+<td>Break down task</td>
+<td>SRS, UX, architecture</td>
+<td>WBS, tasks, dependency</td>
+<td>Task nhỏ, rõ, estimate tốt</td>
+</tr>
+<tr>
+<td>Developer Agent</td>
+<td>Code theo task</td>
+<td>Task, repo, test</td>
+<td>Code, test, migration</td>
+<td>Test pass, ít review comment</td>
+</tr>
+<tr>
+<td>QA Agent</td>
+<td>Sinh test strategy/test case</td>
+<td>SRS, AC, UX</td>
+<td>Test plan, automation script</td>
+<td>Defect escape giảm</td>
+</tr>
+<tr>
+<td>Security Agent</td>
+<td>Threat model, scan</td>
+<td>Architecture, code</td>
+<td>Security checklist, findings</td>
+<td>Critical vuln = 0 trước release</td>
+</tr>
+<tr>
+<td>SRE Agent</td>
+<td>Runbook, alert, rollback</td>
+<td>Deployment plan</td>
+<td>Dashboard, alert, runbook</td>
+<td>MTTR giảm</td>
+</tr>
+<tr>
+<td>Doc Agent</td>
+<td>Handover, docs, release notes</td>
+<td>PR, code diff, issue</td>
+<td>Docs, changelog</td>
+<td>Tài liệu đủ trước release</td>
+</tr>
+<tr>
+<td>Program Radar Agent</td>
+<td>Theo dõi tiến độ/rủi ro</td>
+<td>Lark/GitHub/Base</td>
+<td>Risk report, blocker</td>
+<td>Blocker phát hiện sớm</td>
+</tr>
+</tbody>
+</table></div>
+<hr>
+<h3 id="3-3-raci-mau-cho-feature-phan-mem"><a class="heading-anchor" href="#3-3-raci-mau-cho-feature-phan-mem" aria-label="Liên kết tới mục này">#</a>3.3. RACI mẫu cho feature phần mềm</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Hoạt động</th>
+<th>Sponsor</th>
+<th>PM/PO</th>
+<th>BA</th>
+<th>UX</th>
+<th>Architect</th>
+<th>Dev</th>
+<th>QA</th>
+<th>DevOps/SRE</th>
+<th>AI Agent</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Chốt mục tiêu</td>
+<td>A</td>
+<td>R</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+<td>I</td>
+<td>I</td>
+<td>I</td>
+<td>C</td>
+</tr>
+<tr>
+<td>Viết PRD</td>
+<td>C</td>
+<td>A/R</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+<td>I</td>
+<td>C</td>
+<td>I</td>
+<td>R hỗ trợ</td>
+</tr>
+<tr>
+<td>Viết SRS</td>
+<td>I</td>
+<td>A</td>
+<td>R</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+<td>I</td>
+<td>R hỗ trợ</td>
+</tr>
+<tr>
+<td>UX flow/prototype</td>
+<td>I</td>
+<td>A</td>
+<td>C</td>
+<td>R</td>
+<td>C</td>
+<td>I</td>
+<td>C</td>
+<td>I</td>
+<td>R hỗ trợ</td>
+</tr>
+<tr>
+<td>Architecture/ADR</td>
+<td>I</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+<td>A/R</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+<td>R hỗ trợ</td>
+</tr>
+<tr>
+<td>Breakdown task</td>
+<td>I</td>
+<td>A</td>
+<td>C</td>
+<td>C</td>
+<td>R</td>
+<td>R</td>
+<td>C</td>
+<td>C</td>
+<td>R hỗ trợ</td>
+</tr>
+<tr>
+<td>Implement</td>
+<td>I</td>
+<td>I</td>
+<td>I</td>
+<td>C</td>
+<td>A</td>
+<td>R</td>
+<td>C</td>
+<td>C</td>
+<td>R thực thi</td>
+</tr>
+<tr>
+<td>Test</td>
+<td>I</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+<td>A/R</td>
+<td>C</td>
+<td>R hỗ trợ</td>
+</tr>
+<tr>
+<td>Release</td>
+<td>A</td>
+<td>R</td>
+<td>I</td>
+<td>I</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+<td>A/R</td>
+<td>R hỗ trợ</td>
+</tr>
+<tr>
+<td>Incident</td>
+<td>A</td>
+<td>C</td>
+<td>I</td>
+<td>I</td>
+<td>C</td>
+<td>C</td>
+<td>C</td>
+<td>A/R</td>
+<td>R hỗ trợ</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>R = Responsible, A = Accountable, C = Consulted, I = Informed.</strong></p>
+<hr>
+<h2 id="4-quy-trinh-tong-the-theo-15-giai-doan"><a class="heading-anchor" href="#4-quy-trinh-tong-the-theo-15-giai-doan" aria-label="Liên kết tới mục này">#</a>4. Quy trình tổng thể theo 15 giai đoạn</h2>
+<div class="mermaid">flowchart TB
+    P0[&quot;P0: Governance &amp; Setup&quot;] --&gt; P1[&quot;P1: Intake / Ý tưởng&quot;]
+    P1 --&gt; G1{&quot;Gate 1\nProblem rõ?&quot;}
+    G1 --&gt;|Không| P1
+    G1 --&gt;|Có| P2[&quot;P2: Discovery / PRD&quot;]
+    P2 --&gt; G2{&quot;Gate 2\nPRD đạt DoR?&quot;}
+    G2 --&gt;|Không| P2
+    G2 --&gt;|Có| P3[&quot;P3: SRS / Acceptance Criteria&quot;]
+    P3 --&gt; G3{&quot;Gate 3\nSRS testable?&quot;}
+    G3 --&gt;|Không| P3
+    G3 --&gt;|Có| P4[&quot;P4: UX/UI &amp; Prototype&quot;]
+    P4 --&gt; P5[&quot;P5: Architecture / ADR&quot;]
+    P5 --&gt; G5{&quot;Gate 5\nArchitecture approved?&quot;}
+    G5 --&gt;|Không| P5
+    G5 --&gt;|Có| P6[&quot;P6: Planning / WBS / Risk&quot;]
+    P6 --&gt; P7[&quot;P7: Repo / CI/CD / Test Harness&quot;]
+    P7 --&gt; P8[&quot;P8: Implementation + TDD&quot;]
+    P8 --&gt; P9[&quot;P9: Code Review / Security&quot;]
+    P9 --&gt; G9{&quot;Gate 9\nMerge allowed?&quot;}
+    G9 --&gt;|Không| P8
+    G9 --&gt;|Có| P10[&quot;P10: QA / Regression / E2E&quot;]
+    P10 --&gt; P11[&quot;P11: UAT / Beta&quot;]
+    P11 --&gt; P12[&quot;P12: Release&quot;]
+    P12 --&gt; P13[&quot;P13: Monitoring / Incident&quot;]
+    P13 --&gt; P14[&quot;P14: Retrospective / Knowledge&quot;]
+</div>
+<hr>
+<h1 id="phase-0-governance-constitution-va-setup-nen-tang"><a class="heading-anchor" href="#phase-0-governance-constitution-va-setup-nen-tang" aria-label="Liên kết tới mục này">#</a>PHASE 0 — Governance, Constitution và Setup nền tảng</h1>
+<h2 id="0-1-muc-tieu"><a class="heading-anchor" href="#0-1-muc-tieu" aria-label="Liên kết tới mục này">#</a>0.1. Mục tiêu</h2>
+<p>Thiết lập “luật chơi” trước khi phát triển:</p>
+<ul>
+<li>Quy chuẩn tài liệu.</li>
+<li>Quy chuẩn coding.</li>
+<li>Quy chuẩn test.</li>
+<li>Quy chuẩn branch/PR.</li>
+<li>Quy chuẩn AI Agent.</li>
+<li>Quyền hạn của agent.</li>
+<li>Cách kiểm soát rủi ro.</li>
+<li>Cách trace requirement đến code/release.</li>
+<li>Cách quản lý knowledge base.</li>
+</ul>
+<h2 id="0-2-input"><a class="heading-anchor" href="#0-2-input" aria-label="Liên kết tới mục này">#</a>0.2. Input</h2>
+<ul>
+<li>Chiến lược sản phẩm.</li>
+<li>Tech stack công ty.</li>
+<li>Quy định bảo mật.</li>
+<li>Quy trình Git hiện tại.</li>
+<li>Quy trình release hiện tại.</li>
+<li>Quy định sử dụng AI.</li>
+<li>Template PRD/SRS/ADR/Test/Release.</li>
+</ul>
+<h2 id="0-3-output"><a class="heading-anchor" href="#0-3-output" aria-label="Liên kết tới mục này">#</a>0.3. Output</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Deliverable</th>
+<th>Mô tả</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Engineering Constitution</td>
+<td>Luật kỹ thuật bất biến của dự án</td>
+</tr>
+<tr>
+<td>AI Agent Policy</td>
+<td>Agent được làm gì, không được làm gì</td>
+</tr>
+<tr>
+<td>Repo Standard</td>
+<td>Cấu trúc repo, branch, naming, docs</td>
+</tr>
+<tr>
+<td>Definition of Ready</td>
+<td>Tiêu chuẩn trước khi task được làm</td>
+</tr>
+<tr>
+<td>Definition of Done</td>
+<td>Tiêu chuẩn trước khi task được đóng</td>
+</tr>
+<tr>
+<td>Quality Gate Matrix</td>
+<td>Gate theo từng phase</td>
+</tr>
+<tr>
+<td>Traceability Template</td>
+<td>Map requirement → task → test → PR</td>
+</tr>
+<tr>
+<td>Security Policy</td>
+<td>Secret, permission, dependency, data</td>
+</tr>
+<tr>
+<td>Prompt Library</td>
+<td>Prompt chuẩn cho từng agent</td>
+</tr>
+<tr>
+<td>Skill/Plugin Setup</td>
+<td>Superpowers, Spec Kit, agent plugins</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="0-4-engineering-constitution-mau"><a class="heading-anchor" href="#0-4-engineering-constitution-mau" aria-label="Liên kết tới mục này">#</a>0.4. Engineering Constitution mẫu</h2>
+<pre><code class="language-markdown"># Engineering Constitution
+
+## 1. Product First
+- Mọi thay đổi code phải liên kết với một requirement hoặc bug rõ ràng.
+- Không implement feature chỉ vì “có thể làm”.
+
+## 2. Spec First
+- Feature mới phải có PRD/SRS/Acceptance Criteria trước khi code.
+- Spec là source of truth; code phải phục vụ spec.
+
+## 3. Test First
+- Logic quan trọng phải có unit/integration test trước hoặc cùng lúc code.
+- Critical flow phải có E2E/regression test.
+
+## 4. AI Agent Discipline
+- Agent không được tự thay đổi architecture lớn nếu chưa có ADR.
+- Agent phải tự chạy test và ghi bằng chứng trước khi báo hoàn thành.
+- Agent phải tạo PR nhỏ, reviewable, có mô tả rõ.
+
+## 5. Security &amp; Privacy
+- Không commit secret.
+- Không đưa dữ liệu khách hàng thật vào prompt hoặc external tool nếu chưa được phép.
+- Dependency mới phải được scan.
+
+## 6. Release Safety
+- Release phải có rollback plan, monitoring, owner trực.
+- Không release khi thiếu alert cho critical path.
+
+## 7. Knowledge
+- Mọi quyết định kiến trúc quan trọng phải có ADR.
+- Mọi incident phải có postmortem.
+</code></pre>
+<h2 id="0-5-checklist-phase-0"><a class="heading-anchor" href="#0-5-checklist-phase-0" aria-label="Liên kết tới mục này">#</a>0.5. Checklist Phase 0</h2>
+<h3 id="governance"><a class="heading-anchor" href="#governance" aria-label="Liên kết tới mục này">#</a>Governance</h3>
+<ul>
+<li><input class="task-check" type="checkbox" disabled> Có danh sách stakeholder và quyền quyết định.</li>
+<li><input class="task-check" type="checkbox" disabled> Có RACI cho từng loại dự án/feature.</li>
+<li><input class="task-check" type="checkbox" disabled> Có quy định khi thay đổi scope.</li>
+<li><input class="task-check" type="checkbox" disabled> Có quy định emergency hotfix.</li>
+<li><input class="task-check" type="checkbox" disabled> Có quy định sign-off từng phase.</li>
+</ul>
+<h3 id="repository"><a class="heading-anchor" href="#repository" aria-label="Liên kết tới mục này">#</a>Repository</h3>
+<ul>
+<li><input class="task-check" type="checkbox" disabled> Có cấu trúc <code>/docs/prd</code>, <code>/docs/srs</code>, <code>/docs/adr</code>, <code>/docs/ux</code>, <code>/docs/test</code>, <code>/docs/release</code>.</li>
+<li><input class="task-check" type="checkbox" disabled> Có <code>AGENTS.md</code> hoặc file tương đương hướng dẫn AI agent.</li>
+<li><input class="task-check" type="checkbox" disabled> Có coding convention.</li>
+<li><input class="task-check" type="checkbox" disabled> Có branch strategy.</li>
+<li><input class="task-check" type="checkbox" disabled> Có PR template.</li>
+<li><input class="task-check" type="checkbox" disabled> Có issue template.</li>
+</ul>
+<h3 id="ai-agent"><a class="heading-anchor" href="#ai-agent" aria-label="Liên kết tới mục này">#</a>AI Agent</h3>
+<ul>
+<li><input class="task-check" type="checkbox" disabled> Agent có quyền đọc repo.</li>
+<li><input class="task-check" type="checkbox" disabled> Agent có quyền tạo branch/PR theo policy.</li>
+<li><input class="task-check" type="checkbox" disabled> Agent bị giới hạn không đụng secret/production.</li>
+<li><input class="task-check" type="checkbox" disabled> Agent phải chạy test trước khi báo xong.</li>
+<li><input class="task-check" type="checkbox" disabled> Agent phải ghi “evidence log”.</li>
+<li><input class="task-check" type="checkbox" disabled> Agent phải nêu assumption nếu thiếu thông tin.</li>
+</ul>
+<h3 id="superpowers"><a class="heading-anchor" href="#superpowers" aria-label="Liên kết tới mục này">#</a>Superpowers</h3>
+<ul>
+<li><input class="task-check" type="checkbox" disabled> Cài Superpowers cho coding harness đang dùng.</li>
+<li><input class="task-check" type="checkbox" disabled> Kiểm tra agent có kích hoạt brainstorming trước khi code.</li>
+<li><input class="task-check" type="checkbox" disabled> Kiểm tra agent có tạo implementation plan.</li>
+<li><input class="task-check" type="checkbox" disabled> Kiểm tra TDD cycle hoạt động.</li>
+<li><input class="task-check" type="checkbox" disabled> Kiểm tra review/finish branch workflow.</li>
+</ul>
+<h2 id="0-6-quality-gate-phase-0"><a class="heading-anchor" href="#0-6-quality-gate-phase-0" aria-label="Liên kết tới mục này">#</a>0.6. Quality Gate Phase 0</h2>
+<p>Một dự án chỉ được bắt đầu khi:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Điều kiện</th>
+<th>Tiêu chuẩn đạt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Có owner</td>
+<td>Mỗi feature/project có DRI</td>
+</tr>
+<tr>
+<td>Có repo chuẩn</td>
+<td>Có CI baseline chạy được</td>
+</tr>
+<tr>
+<td>Có agent policy</td>
+<td>Agent biết quyền hạn/giới hạn</td>
+</tr>
+<tr>
+<td>Có DoR/DoD</td>
+<td>PM/Dev/QA cùng hiểu</td>
+</tr>
+<tr>
+<td>Có traceability</td>
+<td>Có ID feature/requirement/task</td>
+</tr>
+</tbody>
+</table></div>
+<hr>
+<h1 id="phase-1-intake-y-tuong-va-problem-framing"><a class="heading-anchor" href="#phase-1-intake-y-tuong-va-problem-framing" aria-label="Liên kết tới mục này">#</a>PHASE 1 — Intake, Ý tưởng và Problem Framing</h1>
+<h2 id="1-1-muc-tieu"><a class="heading-anchor" href="#1-1-muc-tieu" aria-label="Liên kết tới mục này">#</a>1.1. Mục tiêu</h2>
+<p>Biến một ý tưởng mơ hồ thành vấn đề rõ ràng, có người dùng, bối cảnh, mức độ đau, giá trị kinh doanh và tiêu chí thành công.</p>
+<p><strong>Không hỏi “làm feature gì?” trước. Hỏi “vấn đề nào đáng giải quyết?” trước.</strong></p>
+<div class="mermaid">flowchart LR
+    Idea[&quot;Ý tưởng thô&quot;] --&gt; Pain[&quot;User Pain&quot;]
+    Pain --&gt; Segment[&quot;User Segment&quot;]
+    Segment --&gt; Context[&quot;Bối cảnh sử dụng&quot;]
+    Context --&gt; Impact[&quot;Tác động kinh doanh&quot;]
+    Impact --&gt; Hypothesis[&quot;Giả thuyết giải pháp&quot;]
+    Hypothesis --&gt; Success[&quot;Success Metrics&quot;]
+</div>
+<h2 id="1-2-cong-viec-con-nguoi"><a class="heading-anchor" href="#1-2-cong-viec-con-nguoi" aria-label="Liên kết tới mục này">#</a>1.2. Công việc con người</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Vai trò</th>
+<th>Công việc</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sponsor</td>
+<td>Nêu strategic intent, priority, business constraint</td>
+</tr>
+<tr>
+<td>PM/PO</td>
+<td>Thu thập ý tưởng, xác định mục tiêu, phân loại impact</td>
+</tr>
+<tr>
+<td>BA</td>
+<td>Phỏng vấn stakeholder, tìm ambiguity</td>
+</tr>
+<tr>
+<td>UX</td>
+<td>Tìm context sử dụng, pain trong journey</td>
+</tr>
+<tr>
+<td>Tech Lead</td>
+<td>Ước lượng feasibility sơ bộ</td>
+</tr>
+<tr>
+<td>QA</td>
+<td>Nhận diện rủi ro kiểm thử sớm</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="1-3-cong-viec-ai-agent"><a class="heading-anchor" href="#1-3-cong-viec-ai-agent" aria-label="Liên kết tới mục này">#</a>1.3. Công việc AI Agent</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Agent</th>
+<th>Việc cần làm</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Product Discovery Agent</td>
+<td>Hỏi Socratic để bóc tách vấn đề</td>
+</tr>
+<tr>
+<td>Market/Research Agent</td>
+<td>Tổng hợp benchmark, competitor, trend nếu cần</td>
+</tr>
+<tr>
+<td>Risk Agent</td>
+<td>Liệt kê rủi ro business/tech/ops</td>
+</tr>
+<tr>
+<td>Data Agent</td>
+<td>Gợi ý dữ liệu cần đo</td>
+</tr>
+<tr>
+<td>Documentation Agent</td>
+<td>Tạo problem brief</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="1-4-superpowers-nen-dung"><a class="heading-anchor" href="#1-4-superpowers-nen-dung" aria-label="Liên kết tới mục này">#</a>1.4. Superpowers nên dùng</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Skill</th>
+<th>Cách dùng</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Brainstorming</td>
+<td>Agent hỏi ngược để hiểu “thực sự muốn làm gì”</td>
+</tr>
+<tr>
+<td>Writing plans</td>
+<td>Chỉ dùng để plan discovery, chưa code</td>
+</tr>
+<tr>
+<td>Systematic debugging</td>
+<td>Nếu intake là bug/incident, dùng để tìm root cause</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="1-5-template-problem-brief"><a class="heading-anchor" href="#1-5-template-problem-brief" aria-label="Liên kết tới mục này">#</a>1.5. Template Problem Brief</h2>
+<pre><code class="language-markdown"># Problem Brief
+
+## 1. Bối cảnh
+- Sản phẩm:
+- User segment:
+- Tình huống sử dụng:
+- Ai đang bị ảnh hưởng:
+
+## 2. Vấn đề
+- Người dùng đang gặp vấn đề gì?
+- Vấn đề xảy ra khi nào?
+- Tần suất:
+- Mức độ nghiêm trọng:
+- Bằng chứng:
+
+## 3. Tác động
+- Ảnh hưởng user:
+- Ảnh hưởng business:
+- Ảnh hưởng vận hành:
+- Ảnh hưởng kỹ thuật:
+
+## 4. Giả thuyết giải pháp
+- Giải pháp đề xuất:
+- Vì sao có thể hiệu quả:
+- Phạm vi thử nghiệm:
+
+## 5. Success Metrics
+- Metric chính:
+- Metric phụ:
+- Ngưỡng đạt:
+- Cách đo:
+
+## 6. Không làm
+- Out of scope:
+- Rủi ro nếu mở rộng scope:
+</code></pre>
+<h2 id="1-6-checklist-phase-1"><a class="heading-anchor" href="#1-6-checklist-phase-1" aria-label="Liên kết tới mục này">#</a>1.6. Checklist Phase 1</h2>
+<ul>
+<li><input class="task-check" type="checkbox" disabled> Đã xác định user segment.</li>
+<li><input class="task-check" type="checkbox" disabled> Đã mô tả pain bằng tình huống cụ thể.</li>
+<li><input class="task-check" type="checkbox" disabled> Có bằng chứng: feedback, log, data, interview, ticket.</li>
+<li><input class="task-check" type="checkbox" disabled> Có business impact.</li>
+<li><input class="task-check" type="checkbox" disabled> Có technical feasibility sơ bộ.</li>
+<li><input class="task-check" type="checkbox" disabled> Có success metric.</li>
+<li><input class="task-check" type="checkbox" disabled> Có out-of-scope.</li>
+<li><input class="task-check" type="checkbox" disabled> Có DRI.</li>
+<li><input class="task-check" type="checkbox" disabled> Có quyết định: tiếp tục / tạm dừng / loại bỏ.</li>
+</ul>
+<h2 id="1-7-gate-1-problem-clarity-gate"><a class="heading-anchor" href="#1-7-gate-1-problem-clarity-gate" aria-label="Liên kết tới mục này">#</a>1.7. Gate 1 — Problem Clarity Gate</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Câu hỏi</th>
+<th>Đạt khi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Vấn đề có thật không?</td>
+<td>Có bằng chứng</td>
+</tr>
+<tr>
+<td>Vấn đề có đáng giải quyết không?</td>
+<td>Có impact</td>
+</tr>
+<tr>
+<td>Giải pháp có nằm trong chiến lược không?</td>
+<td>Có alignment</td>
+</tr>
+<tr>
+<td>Có thể đo thành công không?</td>
+<td>Có metric</td>
+</tr>
+<tr>
+<td>Có owner không?</td>
+<td>Có DRI</td>
+</tr>
+</tbody>
+</table></div>
+<hr>
+<h1 id="phase-2-product-discovery-va-prd"><a class="heading-anchor" href="#phase-2-product-discovery-va-prd" aria-label="Liên kết tới mục này">#</a>PHASE 2 — Product Discovery và PRD</h1>
+<h2 id="2-1-muc-tieu"><a class="heading-anchor" href="#2-1-muc-tieu" aria-label="Liên kết tới mục này">#</a>2.1. Mục tiêu</h2>
+<p>Tạo PRD đủ rõ để toàn bộ team hiểu:</p>
+<ul>
+<li>Tại sao làm?</li>
+<li>Làm cho ai?</li>
+<li>Giá trị là gì?</li>
+<li>Scope là gì?</li>
+<li>Không làm gì?</li>
+<li>Thành công đo bằng gì?</li>
+<li>Release theo milestone nào?</li>
+</ul>
+<h2 id="2-2-so-do-prd"><a class="heading-anchor" href="#2-2-so-do-prd" aria-label="Liên kết tới mục này">#</a>2.2. Sơ đồ PRD</h2>
+<div class="mermaid">mindmap
+  root((PRD))
+    Why
+      Business Goal
+      User Pain
+      Strategic Fit
+    Who
+      Persona
+      Stakeholder
+      User Segment
+    What
+      Feature Scope
+      User Stories
+      Use Cases
+      Out of Scope
+    Success
+      Product KPI
+      Adoption
+      Quality Target
+    Constraint
+      Time
+      Cost
+      Compliance
+      Tech Boundary
+    Release
+      MVP
+      Beta
+      GA
+</div>
+<h2 id="2-3-cong-viec-con-nguoi"><a class="heading-anchor" href="#2-3-cong-viec-con-nguoi" aria-label="Liên kết tới mục này">#</a>2.3. Công việc con người</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Vai trò</th>
+<th>Công việc</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PM/PO</td>
+<td>Chủ trì PRD, chốt scope/KPI</td>
+</tr>
+<tr>
+<td>BA</td>
+<td>Làm rõ nghiệp vụ và luồng chính/phụ</td>
+</tr>
+<tr>
+<td>UX</td>
+<td>Bổ sung journey, pain point, mental model</td>
+</tr>
+<tr>
+<td>Tech Lead</td>
+<td>Review feasibility</td>
+</tr>
+<tr>
+<td>QA</td>
+<td>Review testability</td>
+</tr>
+<tr>
+<td>Sponsor</td>
+<td>Sign-off mục tiêu và ưu tiên</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="2-4-cong-viec-ai-agent"><a class="heading-anchor" href="#2-4-cong-viec-ai-agent" aria-label="Liên kết tới mục này">#</a>2.4. Công việc AI Agent</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Agent</th>
+<th>Công việc</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PRD Agent</td>
+<td>Draft PRD theo template</td>
+</tr>
+<tr>
+<td>BA Agent</td>
+<td>Tạo user story, use case, edge case</td>
+</tr>
+<tr>
+<td>Review Agent</td>
+<td>Tìm lỗ hổng: ambiguity, missing metric, conflicting scope</td>
+</tr>
+<tr>
+<td>Risk Agent</td>
+<td>Tạo risk log</td>
+</tr>
+<tr>
+<td>Traceability Agent</td>
+<td>Gán ID requirement</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="2-5-template-prd-chuan"><a class="heading-anchor" href="#2-5-template-prd-chuan" aria-label="Liên kết tới mục này">#</a>2.5. Template PRD chuẩn</h2>
+<pre><code class="language-markdown"># PRD: &lt;Tên feature/project&gt;
+
+## 1. Executive Summary
+- Mục tiêu:
+- Người dùng chính:
+- Giá trị chính:
+- Phiên bản dự kiến:
+
+## 2. Problem Statement
+- Vấn đề:
+- Bằng chứng:
+- Tác động:
+
+## 3. User Persona
+| Persona | Nhu cầu | Pain | Tình huống |
+|---|---|---|---|
+
+## 4. Goals &amp; Non-goals
+### Goals
+- G1:
+- G2:
+
+### Non-goals
+- NG1:
+- NG2:
+
+## 5. User Stories
+| ID | User Story | Priority | Acceptance Summary |
+|---|---|---|---|
+
+## 6. Scope
+### In Scope
+### Out of Scope
+
+## 7. Product Requirements
+| Req ID | Requirement | Priority | Metric | Owner |
+|---|---|---|---|---|
+
+## 8. Success Metrics
+| Metric | Baseline | Target | Measurement |
+|---|---|---|---|
+
+## 9. Risks &amp; Assumptions
+| ID | Risk/Assumption | Impact | Mitigation |
+|---|---|---|---|
+
+## 10. Release Plan
+| Milestone | Scope | Success Criteria |
+|---|---|---|
+</code></pre>
+<h2 id="2-6-checklist-prd"><a class="heading-anchor" href="#2-6-checklist-prd" aria-label="Liên kết tới mục này">#</a>2.6. Checklist PRD</h2>
+<ul>
+<li><input class="task-check" type="checkbox" disabled> Có problem statement rõ.</li>
+<li><input class="task-check" type="checkbox" disabled> Có persona/user segment.</li>
+<li><input class="task-check" type="checkbox" disabled> Có goal và non-goal.</li>
+<li><input class="task-check" type="checkbox" disabled> Có scope và out-of-scope.</li>
+<li><input class="task-check" type="checkbox" disabled> Có user story.</li>
+<li><input class="task-check" type="checkbox" disabled> Có success metric.</li>
+<li><input class="task-check" type="checkbox" disabled> Có priority.</li>
+<li><input class="task-check" type="checkbox" disabled> Có assumption.</li>
+<li><input class="task-check" type="checkbox" disabled> Có rủi ro.</li>
+<li><input class="task-check" type="checkbox" disabled> Có milestone.</li>
+<li><input class="task-check" type="checkbox" disabled> Có DRI/owner.</li>
+<li><input class="task-check" type="checkbox" disabled> Đã review bởi Tech Lead và QA.</li>
+<li><input class="task-check" type="checkbox" disabled> Đã sign-off bởi PM/PO/Sponsor.</li>
+</ul>
+<h2 id="2-7-gate-2-prd-definition-of-ready"><a class="heading-anchor" href="#2-7-gate-2-prd-definition-of-ready" aria-label="Liên kết tới mục này">#</a>2.7. Gate 2 — PRD Definition of Ready</h2>
+<p>PRD đạt ready khi:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Tiêu chí</th>
+<th>Mức đạt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Rõ mục tiêu</td>
+<td>Người ngoài team đọc vẫn hiểu vì sao làm</td>
+</tr>
+<tr>
+<td>Rõ user</td>
+<td>Không nói chung chung “người dùng”</td>
+</tr>
+<tr>
+<td>Rõ scope</td>
+<td>Có in-scope/out-of-scope</td>
+</tr>
+<tr>
+<td>Rõ metric</td>
+<td>Có target đo được</td>
+</tr>
+<tr>
+<td>Rõ ưu tiên</td>
+<td>Must/Should/Could</td>
+</tr>
+<tr>
+<td>Rõ rủi ro</td>
+<td>Có risk log</td>
+</tr>
+<tr>
+<td>Có sign-off</td>
+<td>PM/PO/Sponsor chốt</td>
+</tr>
+</tbody>
+</table></div>
+<hr>
+<h1 id="phase-3-srs-acceptance-criteria-va-requirement-engineering"><a class="heading-anchor" href="#phase-3-srs-acceptance-criteria-va-requirement-engineering" aria-label="Liên kết tới mục này">#</a>PHASE 3 — SRS, Acceptance Criteria và Requirement Engineering</h1>
+<h2 id="3-1-muc-tieu"><a class="heading-anchor" href="#3-1-muc-tieu" aria-label="Liên kết tới mục này">#</a>3.1. Mục tiêu</h2>
+<p>Chuyển PRD thành yêu cầu kỹ thuật/nghiệp vụ đủ chi tiết để:</p>
+<ul>
+<li>Dev implement.</li>
+<li>QA test.</li>
+<li>AI Agent hiểu đúng.</li>
+<li>Trace requirement với code/test/PR.</li>
+<li>Giảm mơ hồ trước khi vào architecture và coding.</li>
+</ul>
+<h2 id="3-2-mo-hinh-requirement"><a class="heading-anchor" href="#3-2-mo-hinh-requirement" aria-label="Liên kết tới mục này">#</a>3.2. Mô hình requirement</h2>
+<div class="mermaid">flowchart TB
+    PRD[&quot;PRD Requirement&quot;] --&gt; FR[&quot;Functional Requirement&quot;]
+    PRD --&gt; NFR[&quot;Non-functional Requirement&quot;]
+    PRD --&gt; BR[&quot;Business Rule&quot;]
+    PRD --&gt; UX[&quot;UX Requirement&quot;]
+    PRD --&gt; DATA[&quot;Data Requirement&quot;]
+    PRD --&gt; SEC[&quot;Security Requirement&quot;]
+    PRD --&gt; OPS[&quot;Operational Requirement&quot;]
+
+    FR --&gt; AC[&quot;Acceptance Criteria&quot;]
+    NFR --&gt; NFRTest[&quot;Performance/Reliability Test&quot;]
+    BR --&gt; RuleTest[&quot;Rule Test&quot;]
+    UX --&gt; UXState[&quot;State Matrix&quot;]
+    DATA --&gt; Schema[&quot;Data Contract&quot;]
+    SEC --&gt; Threat[&quot;Threat Model&quot;]
+    OPS --&gt; Runbook[&quot;Runbook Requirement&quot;]
+</div>
+<h2 id="3-3-template-srs"><a class="heading-anchor" href="#3-3-template-srs" aria-label="Liên kết tới mục này">#</a>3.3. Template SRS</h2>
+<pre><code class="language-markdown"># SRS: &lt;Tên feature/project&gt;
+
+## 1. Scope
+- Reference PRD:
+- Feature ID:
+- Version:
+
+## 2. Functional Requirements
+| ID | Requirement | Trigger | Input | Output | Priority | Acceptance Criteria |
+|---|---|---|---|---|---|---|
+
+## 3. Business Rules
+| ID | Rule | Example | Exception |
+|---|---|---|---|
+
+## 4. User Flow / System Flow
+- Main flow:
+- Alternative flow:
+- Error flow:
+- Edge cases:
+
+## 5. Non-functional Requirements
+| ID | Category | Requirement | Target | Test Method |
+|---|---|---|---|---|
+
+## 6. Data Requirements
+| Entity | Field | Type | Rule | Privacy Level |
+|---|---|---|---|---|
+
+## 7. API / Integration Requirements
+| API | Direction | Request | Response | Error | SLA |
+|---|---|---|---|---|---|
+
+## 8. Security &amp; Privacy
+- Authentication:
+- Authorization:
+- Data retention:
+- Audit:
+- Threats:
+
+## 9. Observability
+- Logs:
+- Metrics:
+- Traces:
+- Alerts:
+
+## 10. Acceptance Criteria
+| AC ID | Given | When | Then | Test Type |
+|---|---|---|---|---|
+</code></pre>
+<h2 id="3-4-acceptance-criteria-chuan-given-when-then"><a class="heading-anchor" href="#3-4-acceptance-criteria-chuan-given-when-then" aria-label="Liên kết tới mục này">#</a>3.4. Acceptance Criteria chuẩn Given‑When‑Then</h2>
+<pre><code class="language-gherkin">Feature: Người dùng điều khiển thiết bị bằng giọng nói
+
+Scenario: Bật đèn phòng khách thành công
+  Given người dùng đang ở nhà &quot;Home A&quot;
+  And thiết bị &quot;Đèn phòng khách&quot; online
+  When người dùng nói &quot;Bật đèn phòng khách&quot;
+  Then hệ thống gọi tool điều khiển đúng device_id
+  And phản hồi người dùng trong vòng 1.5 giây
+  And trạng thái thiết bị được cập nhật là &quot;on&quot;
+
+Scenario: Thiết bị offline
+  Given thiết bị &quot;Đèn phòng khách&quot; offline
+  When người dùng nói &quot;Bật đèn phòng khách&quot;
+  Then hệ thống không báo thành công giả
+  And phản hồi rõ rằng thiết bị đang offline
+</code></pre>
+<h2 id="3-5-cong-viec-ai-agent"><a class="heading-anchor" href="#3-5-cong-viec-ai-agent" aria-label="Liên kết tới mục này">#</a>3.5. Công việc AI Agent</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Agent</th>
+<th>Công việc</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>BA/SRS Agent</td>
+<td>Sinh functional requirements, business rules, edge cases</td>
+</tr>
+<tr>
+<td>QA Agent</td>
+<td>Chuyển AC thành test scenarios</td>
+</tr>
+<tr>
+<td>Data Agent</td>
+<td>Đề xuất schema/data contract</td>
+</tr>
+<tr>
+<td>Security Agent</td>
+<td>Xác định auth, permission, privacy</td>
+</tr>
+<tr>
+<td>Observability Agent</td>
+<td>Đề xuất log/metric/alert</td>
+</tr>
+<tr>
+<td>Ambiguity Agent</td>
+<td>Tìm các câu mơ hồ, thiếu điều kiện</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="3-6-checklist-srs"><a class="heading-anchor" href="#3-6-checklist-srs" aria-label="Liên kết tới mục này">#</a>3.6. Checklist SRS</h2>
+<ul>
+<li><input class="task-check" type="checkbox" disabled> Mỗi requirement có ID.</li>
+<li><input class="task-check" type="checkbox" disabled> Mỗi requirement có acceptance criteria.</li>
+<li><input class="task-check" type="checkbox" disabled> Mỗi AC viết theo Given‑When‑Then hoặc format tương đương.</li>
+<li><input class="task-check" type="checkbox" disabled> Có main flow.</li>
+<li><input class="task-check" type="checkbox" disabled> Có alternative flow.</li>
+<li><input class="task-check" type="checkbox" disabled> Có error flow.</li>
+<li><input class="task-check" type="checkbox" disabled> Có edge case.</li>
+<li><input class="task-check" type="checkbox" disabled> Có NFR: performance, reliability, security, privacy, scalability.</li>
+<li><input class="task-check" type="checkbox" disabled> Có data contract.</li>
+<li><input class="task-check" type="checkbox" disabled> Có API/integration contract.</li>
+<li><input class="task-check" type="checkbox" disabled> Có observability requirement.</li>
+<li><input class="task-check" type="checkbox" disabled> QA xác nhận testable.</li>
+<li><input class="task-check" type="checkbox" disabled> Dev xác nhận implementable.</li>
+<li><input class="task-check" type="checkbox" disabled> PM xác nhận đúng scope.</li>
+</ul>
+<h2 id="3-7-gate-3-requirement-testability-gate"><a class="heading-anchor" href="#3-7-gate-3-requirement-testability-gate" aria-label="Liên kết tới mục này">#</a>3.7. Gate 3 — Requirement Testability Gate</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Tiêu chí</th>
+<th>Đạt khi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Không mơ hồ</td>
+<td>Không có từ “nhanh”, “dễ”, “ổn định” nếu chưa định lượng</td>
+</tr>
+<tr>
+<td>Test được</td>
+<td>QA viết được test case</td>
+</tr>
+<tr>
+<td>Implement được</td>
+<td>Dev hiểu input/output</td>
+</tr>
+<tr>
+<td>Trace được</td>
+<td>Có ID</td>
+</tr>
+<tr>
+<td>Có edge/error</td>
+<td>Không chỉ happy path</td>
+</tr>
+<tr>
+<td>Có NFR</td>
+<td>Có target đo được</td>
+</tr>
+</tbody>
+</table></div>
+<hr>
+<h1 id="phase-4-ux-ui-prototype-va-state-design"><a class="heading-anchor" href="#phase-4-ux-ui-prototype-va-state-design" aria-label="Liên kết tới mục này">#</a>PHASE 4 — UX/UI, Prototype và State Design</h1>
+<h2 id="4-1-muc-tieu"><a class="heading-anchor" href="#4-1-muc-tieu" aria-label="Liên kết tới mục này">#</a>4.1. Mục tiêu</h2>
+<p>Thiết kế trải nghiệm người dùng đầy đủ, không chỉ màn hình đẹp:</p>
+<ul>
+<li>Journey.</li>
+<li>Flow.</li>
+<li>Information architecture.</li>
+<li>Interaction.</li>
+<li>Loading/empty/error/success states.</li>
+<li>Permission states.</li>
+<li>Offline states.</li>
+<li>Accessibility.</li>
+<li>Copywriting.</li>
+<li>Prototype test.</li>
+</ul>
+<h2 id="4-2-so-do-ux-tu-requirement-den-prototype"><a class="heading-anchor" href="#4-2-so-do-ux-tu-requirement-den-prototype" aria-label="Liên kết tới mục này">#</a>4.2. Sơ đồ UX từ requirement đến prototype</h2>
+<div class="mermaid">flowchart LR
+    SRS[&quot;SRS + AC&quot;] --&gt; Journey[&quot;User Journey&quot;]
+    Journey --&gt; IA[&quot;Information Architecture&quot;]
+    IA --&gt; Flow[&quot;User Flow&quot;]
+    Flow --&gt; Wire[&quot;Wireframe&quot;]
+    Wire --&gt; State[&quot;State Matrix&quot;]
+    State --&gt; Prototype[&quot;Clickable Prototype&quot;]
+    Prototype --&gt; Usability[&quot;Usability Review&quot;]
+    Usability --&gt; Spec[&quot;UX Spec for Dev&quot;]
+</div>
+<h2 id="4-3-state-matrix-bat-buoc"><a class="heading-anchor" href="#4-3-state-matrix-bat-buoc" aria-label="Liên kết tới mục này">#</a>4.3. State Matrix bắt buộc</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>State</th>
+<th>Câu hỏi phải trả lời</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Initial</td>
+<td>Người dùng nhìn thấy gì đầu tiên?</td>
+</tr>
+<tr>
+<td>Loading</td>
+<td>Khi chờ, hệ thống hiển thị gì?</td>
+</tr>
+<tr>
+<td>Success</td>
+<td>Thành công có rõ không?</td>
+</tr>
+<tr>
+<td>Error</td>
+<td>Lỗi nói gì, hướng dẫn gì?</td>
+</tr>
+<tr>
+<td>Empty</td>
+<td>Chưa có dữ liệu thì sao?</td>
+</tr>
+<tr>
+<td>Offline</td>
+<td>Mất mạng/device offline thì sao?</td>
+</tr>
+<tr>
+<td>Permission denied</td>
+<td>Không có quyền thì sao?</td>
+</tr>
+<tr>
+<td>Partial success</td>
+<td>Một phần thành công thì sao?</td>
+</tr>
+<tr>
+<td>Conflict</td>
+<td>Dữ liệu bị thay đổi bởi người khác thì sao?</td>
+</tr>
+<tr>
+<td>Timeout</td>
+<td>Quá thời gian thì sao?</td>
+</tr>
+<tr>
+<td>Retry</td>
+<td>Retry ở đâu, bao nhiêu lần?</td>
+</tr>
+<tr>
+<td>Undo/Rollback</td>
+<td>Có hoàn tác không?</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="4-4-cong-viec-ai-agent"><a class="heading-anchor" href="#4-4-cong-viec-ai-agent" aria-label="Liên kết tới mục này">#</a>4.4. Công việc AI Agent</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Agent</th>
+<th>Công việc</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>UX Agent</td>
+<td>Tạo user flow, state matrix, UX writing</td>
+</tr>
+<tr>
+<td>Design Review Agent</td>
+<td>Tìm missing state và conflict</td>
+</tr>
+<tr>
+<td>Accessibility Agent</td>
+<td>Kiểm tra contrast, font, navigation</td>
+</tr>
+<tr>
+<td>Dev Handoff Agent</td>
+<td>Chuyển Figma/prototype thành spec dev</td>
+</tr>
+<tr>
+<td>QA Agent</td>
+<td>Sinh test case theo state matrix</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="4-5-checklist-ux-ui"><a class="heading-anchor" href="#4-5-checklist-ux-ui" aria-label="Liên kết tới mục này">#</a>4.5. Checklist UX/UI</h2>
+<ul>
+<li><input class="task-check" type="checkbox" disabled> Có user journey.</li>
+<li><input class="task-check" type="checkbox" disabled> Có flow chính.</li>
+<li><input class="task-check" type="checkbox" disabled> Có flow lỗi.</li>
+<li><input class="task-check" type="checkbox" disabled> Có flow permission.</li>
+<li><input class="task-check" type="checkbox" disabled> Có loading/success/error/empty/offline states.</li>
+<li><input class="task-check" type="checkbox" disabled> Có prototype.</li>
+<li><input class="task-check" type="checkbox" disabled> Có responsive/adaptive rule.</li>
+<li><input class="task-check" type="checkbox" disabled> Có design token hoặc component mapping.</li>
+<li><input class="task-check" type="checkbox" disabled> Có copywriting.</li>
+<li><input class="task-check" type="checkbox" disabled> Có handoff cho dev.</li>
+<li><input class="task-check" type="checkbox" disabled> QA có thể test theo UX spec.</li>
+<li><input class="task-check" type="checkbox" disabled> PM sign-off flow.</li>
+<li><input class="task-check" type="checkbox" disabled> Architect review các flow ảnh hưởng data/system.</li>
+</ul>
+<h2 id="4-6-gate-4-ux-handoff-gate"><a class="heading-anchor" href="#4-6-gate-4-ux-handoff-gate" aria-label="Liên kết tới mục này">#</a>4.6. Gate 4 — UX Handoff Gate</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Tiêu chí</th>
+<th>Đạt khi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>UX đủ flow</td>
+<td>Có main/error/edge</td>
+</tr>
+<tr>
+<td>UI state đầy đủ</td>
+<td>Có state matrix</td>
+</tr>
+<tr>
+<td>Dev hiểu được</td>
+<td>Có spec component, interaction</td>
+</tr>
+<tr>
+<td>QA test được</td>
+<td>Có test scenario theo flow</td>
+</tr>
+<tr>
+<td>Không mâu thuẫn SRS</td>
+<td>Mapping với requirement</td>
+</tr>
+</tbody>
+</table></div>
+<hr>
+<h1 id="phase-5-architecture-adr-va-risk-design"><a class="heading-anchor" href="#phase-5-architecture-adr-va-risk-design" aria-label="Liên kết tới mục này">#</a>PHASE 5 — Architecture, ADR và Risk Design</h1>
+<h2 id="5-1-muc-tieu"><a class="heading-anchor" href="#5-1-muc-tieu" aria-label="Liên kết tới mục này">#</a>5.1. Mục tiêu</h2>
+<p>Thiết kế kiến trúc trước khi code để tránh agent tự đưa ra quyết định lớn thiếu kiểm soát.</p>
+<p>Kiến trúc phải trả lời:</p>
+<ul>
+<li>Hệ thống gồm những module nào?</li>
+<li>Data đi qua đâu?</li>
+<li>API contract thế nào?</li>
+<li>Thành phần nào đồng bộ/bất đồng bộ?</li>
+<li>Latency, throughput, scale target?</li>
+<li>Failure mode?</li>
+<li>Security boundary?</li>
+<li>Migration path?</li>
+<li>Trade-off?</li>
+<li>Lý do chọn phương án?</li>
+</ul>
+<h2 id="5-2-so-do-kien-truc-logical"><a class="heading-anchor" href="#5-2-so-do-kien-truc-logical" aria-label="Liên kết tới mục này">#</a>5.2. Sơ đồ kiến trúc logical</h2>
+<div class="mermaid">flowchart TB
+    Client[&quot;Client App / Web / Device&quot;] --&gt; API[&quot;API Gateway&quot;]
+    API --&gt; Auth[&quot;Auth Service&quot;]
+    API --&gt; BFF[&quot;BFF / Backend Service&quot;]
+    BFF --&gt; Domain[&quot;Domain Service&quot;]
+    Domain --&gt; DB[(&quot;Database&quot;)]
+    Domain --&gt; Cache[(&quot;Cache&quot;)]
+    Domain --&gt; Queue[&quot;Message Queue&quot;]
+    Queue --&gt; Worker[&quot;Async Worker&quot;]
+    Domain --&gt; Third[&quot;3rd Party API&quot;]
+    Domain --&gt; Event[&quot;Event Bus&quot;]
+    Event --&gt; Analytics[&quot;Analytics / Metrics&quot;]
+    API --&gt; Obs[&quot;Logs / Metrics / Traces&quot;]
+    Domain --&gt; Obs
+    Worker --&gt; Obs
+</div>
+<h2 id="5-3-adr-template"><a class="heading-anchor" href="#5-3-adr-template" aria-label="Liên kết tới mục này">#</a>5.3. ADR template</h2>
+<pre><code class="language-markdown"># ADR-XXX: &lt;Tên quyết định kiến trúc&gt;
+
+## Status
+Proposed / Accepted / Deprecated / Superseded
+
+## Context
+- Vấn đề cần quyết định:
+- Ràng buộc:
+- Requirement liên quan:
+- NFR liên quan:
+
+## Options
+### Option A
+- Mô tả:
+- Ưu:
+- Nhược:
+- Rủi ro:
+
+### Option B
+- Mô tả:
+- Ưu:
+- Nhược:
+- Rủi ro:
+
+## Decision
+- Chọn:
+- Lý do:
+
+## Consequences
+- Tác động tích cực:
+- Tác động tiêu cực:
+- Chi phí migration:
+- Điều cần monitor:
+
+## Review Date
+- Ngày review lại:
+</code></pre>
+<h2 id="5-4-cong-viec-ai-agent"><a class="heading-anchor" href="#5-4-cong-viec-ai-agent" aria-label="Liên kết tới mục này">#</a>5.4. Công việc AI Agent</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Agent</th>
+<th>Công việc</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Architect Agent</td>
+<td>Đề xuất architecture options và trade-off</td>
+</tr>
+<tr>
+<td>Security Agent</td>
+<td>Threat model, permission boundary</td>
+</tr>
+<tr>
+<td>Performance Agent</td>
+<td>Tính latency, bottleneck, load</td>
+</tr>
+<tr>
+<td>Data Agent</td>
+<td>Schema, migration, retention</td>
+</tr>
+<tr>
+<td>Cost Agent</td>
+<td>Ước lượng infra cost</td>
+</tr>
+<tr>
+<td>Risk Agent</td>
+<td>Failure mode analysis</td>
+</tr>
+<tr>
+<td>Reviewer Agent</td>
+<td>Review ADR theo checklist</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="5-5-threat-model-toi-thieu"><a class="heading-anchor" href="#5-5-threat-model-toi-thieu" aria-label="Liên kết tới mục này">#</a>5.5. Threat model tối thiểu</h2>
+<div class="mermaid">flowchart LR
+    User[&quot;User&quot;] --&gt; Client[&quot;Client&quot;]
+    Client --&gt; API[&quot;API&quot;]
+    API --&gt; Service[&quot;Service&quot;]
+    Service --&gt; DB[&quot;Database&quot;]
+    Attacker[&quot;Attacker&quot;] -.-&gt; Client
+    Attacker -.-&gt; API
+    Attacker -.-&gt; Service
+    Attacker -.-&gt; DB
+
+    API --&gt; Auth[&quot;AuthZ/AuthN&quot;]
+    Service --&gt; Audit[&quot;Audit Log&quot;]
+    DB --&gt; Encrypt[&quot;Encryption&quot;]
+</div>
+<p>Checklist security:</p>
+<ul>
+<li><input class="task-check" type="checkbox" disabled> Có authentication.</li>
+<li><input class="task-check" type="checkbox" disabled> Có authorization theo role/scope.</li>
+<li><input class="task-check" type="checkbox" disabled> Có input validation.</li>
+<li><input class="task-check" type="checkbox" disabled> Có rate limit.</li>
+<li><input class="task-check" type="checkbox" disabled> Có audit log.</li>
+<li><input class="task-check" type="checkbox" disabled> Không log secret/token/PII.</li>
+<li><input class="task-check" type="checkbox" disabled> Dependency scan.</li>
+<li><input class="task-check" type="checkbox" disabled> Secret scanning.</li>
+<li><input class="task-check" type="checkbox" disabled> Threat model cho critical flow.</li>
+<li><input class="task-check" type="checkbox" disabled> Data retention rule.</li>
+<li><input class="task-check" type="checkbox" disabled> Backup/restore nếu liên quan.</li>
+</ul>
+<h2 id="5-6-checklist-architecture"><a class="heading-anchor" href="#5-6-checklist-architecture" aria-label="Liên kết tới mục này">#</a>5.6. Checklist Architecture</h2>
+<ul>
+<li><input class="task-check" type="checkbox" disabled> Có logical architecture diagram.</li>
+<li><input class="task-check" type="checkbox" disabled> Có sequence diagram cho flow chính.</li>
+<li><input class="task-check" type="checkbox" disabled> Có API contract.</li>
+<li><input class="task-check" type="checkbox" disabled> Có data model.</li>
+<li><input class="task-check" type="checkbox" disabled> Có NFR mapping.</li>
+<li><input class="task-check" type="checkbox" disabled> Có failure mode.</li>
+<li><input class="task-check" type="checkbox" disabled> Có retry/timeout/idempotency rule nếu cần.</li>
+<li><input class="task-check" type="checkbox" disabled> Có security boundary.</li>
+<li><input class="task-check" type="checkbox" disabled> Có monitoring point.</li>
+<li><input class="task-check" type="checkbox" disabled> Có migration plan nếu thay đổi data.</li>
+<li><input class="task-check" type="checkbox" disabled> Có ADR cho quyết định lớn.</li>
+<li><input class="task-check" type="checkbox" disabled> Tech Lead/Architect sign-off.</li>
+<li><input class="task-check" type="checkbox" disabled> Dev/QA/DevOps hiểu cách triển khai/test/release.</li>
+</ul>
+<h2 id="5-7-gate-5-architecture-approval-gate"><a class="heading-anchor" href="#5-7-gate-5-architecture-approval-gate" aria-label="Liên kết tới mục này">#</a>5.7. Gate 5 — Architecture Approval Gate</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Tiêu chí</th>
+<th>Đạt khi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Phương án rõ</td>
+<td>Có diagram và ADR</td>
+</tr>
+<tr>
+<td>Trade-off rõ</td>
+<td>Biết vì sao chọn</td>
+</tr>
+<tr>
+<td>Rủi ro rõ</td>
+<td>Có mitigation</td>
+</tr>
+<tr>
+<td>Test được</td>
+<td>QA biết kiểm chứng NFR</td>
+</tr>
+<tr>
+<td>Vận hành được</td>
+<td>Có log/metric/alert</td>
+</tr>
+<tr>
+<td>Bảo mật được</td>
+<td>Có threat/security checklist</td>
+</tr>
+</tbody>
+</table></div>
+<hr>
+<h1 id="phase-6-planning-wbs-risk-va-sprint-iteration-design"><a class="heading-anchor" href="#phase-6-planning-wbs-risk-va-sprint-iteration-design" aria-label="Liên kết tới mục này">#</a>PHASE 6 — Planning, WBS, Risk và Sprint/Iteration Design</h1>
+<h2 id="6-1-muc-tieu"><a class="heading-anchor" href="#6-1-muc-tieu" aria-label="Liên kết tới mục này">#</a>6.1. Mục tiêu</h2>
+<p>Chuyển spec và architecture thành kế hoạch thực thi nhỏ, rõ, giao được cho người hoặc AI Agent.</p>
+<p><strong>Nguyên tắc:</strong></p>
+<ul>
+<li>Task nhỏ.</li>
+<li>Có input/output.</li>
+<li>Có file path dự kiến.</li>
+<li>Có test.</li>
+<li>Có owner.</li>
+<li>Có dependency.</li>
+<li>Có acceptance criteria.</li>
+<li>Có estimate.</li>
+<li>Có risk.</li>
+<li>Có rollback nếu ảnh hưởng production.</li>
+</ul>
+<h2 id="6-2-so-do-breakdown"><a class="heading-anchor" href="#6-2-so-do-breakdown" aria-label="Liên kết tới mục này">#</a>6.2. Sơ đồ breakdown</h2>
+<div class="mermaid">flowchart TB
+    Feature[&quot;Feature&quot;] --&gt; Epic[&quot;Epic&quot;]
+    Epic --&gt; Story1[&quot;Story 1&quot;]
+    Epic --&gt; Story2[&quot;Story 2&quot;]
+    Story1 --&gt; Task11[&quot;Task 1.1&quot;]
+    Story1 --&gt; Task12[&quot;Task 1.2&quot;]
+    Story2 --&gt; Task21[&quot;Task 2.1&quot;]
+    Task11 --&gt; Test11[&quot;Test 1.1&quot;]
+    Task12 --&gt; Test12[&quot;Test 1.2&quot;]
+    Task21 --&gt; Test21[&quot;Test 2.1&quot;]
+    Test11 --&gt; PR1[&quot;PR nhỏ&quot;]
+    Test12 --&gt; PR2[&quot;PR nhỏ&quot;]
+    Test21 --&gt; PR3[&quot;PR nhỏ&quot;]
+</div>
+<h2 id="6-3-task-template-cho-ai-agent"><a class="heading-anchor" href="#6-3-task-template-cho-ai-agent" aria-label="Liên kết tới mục này">#</a>6.3. Task template cho AI Agent</h2>
+<pre><code class="language-markdown"># Task: &lt;Tên task&gt;
+
+## Metadata
+- Feature ID:
+- Task ID:
+- Owner:
+- Priority:
+- Estimate:
+- Dependency:
+
+## Context
+- PRD:
+- SRS:
+- ADR:
+- UX:
+- Related files:
+
+## Goal
+- Mục tiêu task:
+
+## Scope
+### In scope
+### Out of scope
+
+## Required Changes
+| File/Module | Expected change |
+|---|---|
+
+## Acceptance Criteria
+- [ ] AC1:
+- [ ] AC2:
+
+## Tests Required
+- [ ] Unit test:
+- [ ] Integration test:
+- [ ] E2E test:
+- [ ] Regression test:
+
+## Verification Commands
+~~~bash
+# example
+npm test
+npm run lint
+npm run typecheck
+~~~
+
+## Risks
+- Risk:
+- Mitigation:
+
+## Done Evidence
+- Test result:
+- Screenshot/log:
+- PR link:
+</code></pre>
+<h2 id="6-4-cong-viec-ai-agent"><a class="heading-anchor" href="#6-4-cong-viec-ai-agent" aria-label="Liên kết tới mục này">#</a>6.4. Công việc AI Agent</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Agent</th>
+<th>Công việc</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Planning Agent</td>
+<td>Chia WBS/task</td>
+</tr>
+<tr>
+<td>Dependency Agent</td>
+<td>Tìm dependency/blocker</td>
+</tr>
+<tr>
+<td>Risk Agent</td>
+<td>Tạo risk register</td>
+</tr>
+<tr>
+<td>QA Agent</td>
+<td>Gắn test vào từng task</td>
+</tr>
+<tr>
+<td>Architect Agent</td>
+<td>Đảm bảo task không phá kiến trúc</td>
+</tr>
+<tr>
+<td>Superpowers Agent</td>
+<td>Viết plan theo task nhỏ, có file path và verification</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="6-5-checklist-planning"><a class="heading-anchor" href="#6-5-checklist-planning" aria-label="Liên kết tới mục này">#</a>6.5. Checklist Planning</h2>
+<ul>
+<li><input class="task-check" type="checkbox" disabled> Feature đã chia thành epic/story/task.</li>
+<li><input class="task-check" type="checkbox" disabled> Task có ID.</li>
+<li><input class="task-check" type="checkbox" disabled> Task có owner.</li>
+<li><input class="task-check" type="checkbox" disabled> Task có input/output.</li>
+<li><input class="task-check" type="checkbox" disabled> Task có acceptance criteria.</li>
+<li><input class="task-check" type="checkbox" disabled> Task có test.</li>
+<li><input class="task-check" type="checkbox" disabled> Task có dependency.</li>
+<li><input class="task-check" type="checkbox" disabled> Task có estimate.</li>
+<li><input class="task-check" type="checkbox" disabled> Task có risk.</li>
+<li><input class="task-check" type="checkbox" disabled> Task đủ nhỏ để review.</li>
+<li><input class="task-check" type="checkbox" disabled> Task phù hợp giao AI Agent.</li>
+<li><input class="task-check" type="checkbox" disabled> Có sprint/iteration plan.</li>
+<li><input class="task-check" type="checkbox" disabled> Có daily status mechanism.</li>
+<li><input class="task-check" type="checkbox" disabled> Có escalation rule khi blocker &gt; 24h.</li>
+</ul>
+<h2 id="6-6-gate-6-plan-readiness-gate"><a class="heading-anchor" href="#6-6-gate-6-plan-readiness-gate" aria-label="Liên kết tới mục này">#</a>6.6. Gate 6 — Plan Readiness Gate</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Tiêu chí</th>
+<th>Đạt khi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Chia nhỏ tốt</td>
+<td>Task không quá lớn, review được</td>
+</tr>
+<tr>
+<td>Có test</td>
+<td>Không task nào thiếu cách kiểm chứng</td>
+</tr>
+<tr>
+<td>Có owner</td>
+<td>Không task vô chủ</td>
+</tr>
+<tr>
+<td>Có dependency</td>
+<td>Biết thứ tự làm</td>
+</tr>
+<tr>
+<td>Có risk</td>
+<td>Có mitigation</td>
+</tr>
+<tr>
+<td>Agent-ready</td>
+<td>AI Agent đọc là làm được</td>
+</tr>
+</tbody>
+</table></div>
+<hr>
+<h1 id="phase-7-repo-environment-ci-cd-va-test-harness"><a class="heading-anchor" href="#phase-7-repo-environment-ci-cd-va-test-harness" aria-label="Liên kết tới mục này">#</a>PHASE 7 — Repo, Environment, CI/CD và Test Harness</h1>
+<h2 id="7-1-muc-tieu"><a class="heading-anchor" href="#7-1-muc-tieu" aria-label="Liên kết tới mục này">#</a>7.1. Mục tiêu</h2>
+<p>Tạo môi trường để con người và AI Agent có thể làm việc an toàn, có kiểm chứng tự động.</p>
+<p>AI Agent chỉ đáng tin khi có:</p>
+<ul>
+<li>Build chạy được.</li>
+<li>Test chạy được.</li>
+<li>Lint/typecheck.</li>
+<li>CI/CD.</li>
+<li>Sandbox.</li>
+<li>Mock/stub.</li>
+<li>Seed data.</li>
+<li>Test environment.</li>
+<li>Log/metric.</li>
+<li>Quy định branch/PR.</li>
+</ul>
+<h2 id="7-2-so-do-ci-cd-baseline"><a class="heading-anchor" href="#7-2-so-do-ci-cd-baseline" aria-label="Liên kết tới mục này">#</a>7.2. Sơ đồ CI/CD baseline</h2>
+<div class="mermaid">flowchart LR
+    Dev[&quot;Dev/Agent Branch&quot;] --&gt; PR[&quot;Pull Request&quot;]
+    PR --&gt; Lint[&quot;Lint/Format&quot;]
+    Lint --&gt; Type[&quot;Type Check&quot;]
+    Type --&gt; Unit[&quot;Unit Test&quot;]
+    Unit --&gt; Int[&quot;Integration Test&quot;]
+    Int --&gt; Sec[&quot;Security Scan&quot;]
+    Sec --&gt; Build[&quot;Build Artifact&quot;]
+    Build --&gt; Preview[&quot;Preview/Staging Deploy&quot;]
+    Preview --&gt; E2E[&quot;E2E/Smoke Test&quot;]
+    E2E --&gt; Review[&quot;Human + Agent Review&quot;]
+    Review --&gt; Merge[&quot;Merge&quot;]
+    Merge --&gt; Deploy[&quot;Deploy&quot;]
+</div>
+<h2 id="7-3-branch-strategy-mau"><a class="heading-anchor" href="#7-3-branch-strategy-mau" aria-label="Liên kết tới mục này">#</a>7.3. Branch strategy mẫu</h2>
+<div class="mermaid">gitGraph
+    commit id: &quot;main&quot;
+    branch feature/VA-001
+    checkout feature/VA-001
+    commit id: &quot;spec&quot;
+    commit id: &quot;test-red&quot;
+    commit id: &quot;code-green&quot;
+    commit id: &quot;refactor&quot;
+    checkout main
+    merge feature/VA-001 id: &quot;merge PR&quot;
+    branch hotfix/HF-001
+    checkout hotfix/HF-001
+    commit id: &quot;fix&quot;
+    checkout main
+    merge hotfix/HF-001 id: &quot;hotfix merge&quot;
+</div>
+<h2 id="7-4-repo-structure-mau"><a class="heading-anchor" href="#7-4-repo-structure-mau" aria-label="Liên kết tới mục này">#</a>7.4. Repo structure mẫu</h2>
+<pre><code class="language-text">repo/
+  AGENTS.md
+  README.md
+  docs/
+    constitution.md
+    prd/
+    srs/
+    ux/
+    adr/
+    test/
+    release/
+    runbook/
+    postmortem/
+  src/
+  tests/
+    unit/
+    integration/
+    e2e/
+    performance/
+    security/
+    scenarios/
+  scripts/
+  .github/
+    workflows/
+    pull_request_template.md
+    ISSUE_TEMPLATE/
+</code></pre>
+<h2 id="7-5-agents-md-mau"><a class="heading-anchor" href="#7-5-agents-md-mau" aria-label="Liên kết tới mục này">#</a>7.5. AGENTS.md mẫu</h2>
+<pre><code class="language-markdown"># AGENTS.md
+
+## Mission
+You are an AI software engineering agent. Your job is to implement tasks safely, testably, and traceably.
+
+## Mandatory Rules
+1. Do not code before reading the linked PRD/SRS/ADR/task.
+2. If requirements are ambiguous, stop and ask for clarification.
+3. Use TDD for business logic and critical flows.
+4. Never commit secrets.
+5. Run required verification commands before completion.
+6. Provide evidence: tests run, files changed, assumptions, risks.
+7. Keep PR small and reviewable.
+8. Do not change architecture without ADR approval.
+9. Do not alter unrelated files.
+10. If CI fails, fix or explain root cause.
+
+## Required Output
+- Summary
+- Files changed
+- Tests added/updated
+- Commands run
+- Result evidence
+- Remaining risk
+</code></pre>
+<h2 id="7-6-checklist-phase-7"><a class="heading-anchor" href="#7-6-checklist-phase-7" aria-label="Liên kết tới mục này">#</a>7.6. Checklist Phase 7</h2>
+<ul>
+<li><input class="task-check" type="checkbox" disabled> Repo structure chuẩn.</li>
+<li><input class="task-check" type="checkbox" disabled> Có AGENTS.md.</li>
+<li><input class="task-check" type="checkbox" disabled> Có CI pipeline.</li>
+<li><input class="task-check" type="checkbox" disabled> Có lint/format.</li>
+<li><input class="task-check" type="checkbox" disabled> Có typecheck.</li>
+<li><input class="task-check" type="checkbox" disabled> Có unit test.</li>
+<li><input class="task-check" type="checkbox" disabled> Có integration test.</li>
+<li><input class="task-check" type="checkbox" disabled> Có E2E/smoke test cho critical flow.</li>
+<li><input class="task-check" type="checkbox" disabled> Có security scan.</li>
+<li><input class="task-check" type="checkbox" disabled> Có preview/staging environment.</li>
+<li><input class="task-check" type="checkbox" disabled> Có seed/mock data.</li>
+<li><input class="task-check" type="checkbox" disabled> Có PR template.</li>
+<li><input class="task-check" type="checkbox" disabled> Có branch protection.</li>
+<li><input class="task-check" type="checkbox" disabled> Có CODEOWNERS nếu cần.</li>
+<li><input class="task-check" type="checkbox" disabled> Có release workflow.</li>
+<li><input class="task-check" type="checkbox" disabled> Có rollback workflow.</li>
+<li><input class="task-check" type="checkbox" disabled> AI Agent có thể chạy lệnh verification.</li>
+</ul>
+<h2 id="7-7-gate-7-automation-baseline-gate"><a class="heading-anchor" href="#7-7-gate-7-automation-baseline-gate" aria-label="Liên kết tới mục này">#</a>7.7. Gate 7 — Automation Baseline Gate</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Tiêu chí</th>
+<th>Đạt khi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Build được</td>
+<td>CI build xanh</td>
+</tr>
+<tr>
+<td>Test được</td>
+<td>Unit baseline xanh</td>
+</tr>
+<tr>
+<td>Review được</td>
+<td>PR template + branch protection</td>
+</tr>
+<tr>
+<td>Agent làm được</td>
+<td>Có AGENTS.md và command rõ</td>
+</tr>
+<tr>
+<td>Deploy thử được</td>
+<td>Có staging/preview</td>
+</tr>
+<tr>
+<td>An toàn</td>
+<td>Secret/security scan bật</td>
+</tr>
+</tbody>
+</table></div>
+<hr>
+<h1 id="phase-8-implementation-voi-ai-agent-superpowers-va-tdd"><a class="heading-anchor" href="#phase-8-implementation-voi-ai-agent-superpowers-va-tdd" aria-label="Liên kết tới mục này">#</a>PHASE 8 — Implementation với AI Agent, Superpowers và TDD</h1>
+<h2 id="8-1-muc-tieu"><a class="heading-anchor" href="#8-1-muc-tieu" aria-label="Liên kết tới mục này">#</a>8.1. Mục tiêu</h2>
+<p>Triển khai code theo task nhỏ, dùng AI Agent nhưng vẫn kiểm soát bởi:</p>
+<ul>
+<li>Spec.</li>
+<li>Plan.</li>
+<li>TDD.</li>
+<li>Review.</li>
+<li>CI.</li>
+<li>Evidence.</li>
+<li>Human sign-off.</li>
+</ul>
+<h2 id="8-2-vong-lap-superpowers-implementation"><a class="heading-anchor" href="#8-2-vong-lap-superpowers-implementation" aria-label="Liên kết tới mục này">#</a>8.2. Vòng lặp Superpowers Implementation</h2>
+<div class="mermaid">flowchart TB
+    Task[&quot;Task đã ready&quot;] --&gt; Brain[&quot;Brainstorming / Clarify&quot;]
+    Brain --&gt; Design[&quot;Design chunk / confirm&quot;]
+    Design --&gt; Worktree[&quot;Create worktree / branch&quot;]
+    Worktree --&gt; Plan[&quot;Writing plan&quot;]
+    Plan --&gt; Red[&quot;RED: viết test fail&quot;]
+    Red --&gt; Green[&quot;GREEN: code tối thiểu để pass&quot;]
+    Green --&gt; Refactor[&quot;REFACTOR&quot;]
+    Refactor --&gt; Review[&quot;Agent self-review&quot;]
+    Review --&gt; CI[&quot;Run CI/local checks&quot;]
+    CI --&gt; Pass{&quot;Pass?&quot;}
+    Pass --&gt;|Không| Debug[&quot;Systematic debugging&quot;]
+    Debug --&gt; Red
+    Pass --&gt;|Có| PR[&quot;Create PR&quot;]
+    PR --&gt; Human[&quot;Human review&quot;]
+    Human --&gt; Done{&quot;Approved?&quot;}
+    Done --&gt;|Không| Fix[&quot;Receive review &amp; fix&quot;]
+    Fix --&gt; Red
+    Done --&gt;|Có| Merge[&quot;Merge&quot;]
+</div>
+<h2 id="8-3-prompt-giao-task-cho-ai-agent"><a class="heading-anchor" href="#8-3-prompt-giao-task-cho-ai-agent" aria-label="Liên kết tới mục này">#</a>8.3. Prompt giao task cho AI Agent</h2>
+<pre><code class="language-markdown">Bạn là AI Developer Agent trong dự án &lt;tên dự án&gt;.
+
+Hãy thực hiện task sau theo quy trình bắt buộc:
+1. Đọc PRD/SRS/ADR/UX/task được link.
+2. Tóm tắt lại hiểu biết của bạn.
+3. Nêu assumption và điểm mơ hồ nếu có.
+4. Không code nếu requirement chưa đủ rõ.
+5. Tạo implementation plan nhỏ theo file path.
+6. Áp dụng TDD cho logic chính:
+   - Viết test fail trước.
+   - Chạy test để xác nhận fail đúng.
+   - Viết code tối thiểu.
+   - Chạy test pass.
+   - Refactor.
+7. Chỉ thay đổi file liên quan.
+8. Chạy verification commands.
+9. Tạo evidence log.
+10. Chuẩn bị PR summary.
+
+Task:
+&lt;task content&gt;
+
+Output cần trả về:
+- Understanding
+- Assumptions
+- Plan
+- Files changed
+- Tests added
+- Commands run
+- Results
+- Risk/Follow-up
+</code></pre>
+<h2 id="8-4-superpowers-skill-mapping"><a class="heading-anchor" href="#8-4-superpowers-skill-mapping" aria-label="Liên kết tới mục này">#</a>8.4. Superpowers skill mapping</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Tình huống</th>
+<th>Skill</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ý tưởng chưa rõ</td>
+<td>Brainstorming</td>
+</tr>
+<tr>
+<td>Chuẩn bị code</td>
+<td>Writing plans</td>
+</tr>
+<tr>
+<td>Chia nhiều task song song</td>
+<td>Dispatching parallel agents</td>
+</tr>
+<tr>
+<td>Thực thi theo plan</td>
+<td>Executing plans / Subagent-driven development</td>
+</tr>
+<tr>
+<td>Viết logic</td>
+<td>Test-driven development</td>
+</tr>
+<tr>
+<td>Bug khó</td>
+<td>Systematic debugging</td>
+</tr>
+<tr>
+<td>Xong một phần</td>
+<td>Requesting code review</td>
+</tr>
+<tr>
+<td>Nhận comment</td>
+<td>Receiving code review</td>
+</tr>
+<tr>
+<td>Làm song song branch</td>
+<td>Using git worktrees</td>
+</tr>
+<tr>
+<td>Kết thúc branch</td>
+<td>Finishing a development branch</td>
+</tr>
+<tr>
+<td>Báo fix xong</td>
+<td>Verification before completion</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="8-5-checklist-implementation"><a class="heading-anchor" href="#8-5-checklist-implementation" aria-label="Liên kết tới mục này">#</a>8.5. Checklist Implementation</h2>
+<ul>
+<li><input class="task-check" type="checkbox" disabled> Agent đã đọc đủ context.</li>
+<li><input class="task-check" type="checkbox" disabled> Agent tóm tắt đúng yêu cầu.</li>
+<li><input class="task-check" type="checkbox" disabled> Mọi assumption được ghi lại.</li>
+<li><input class="task-check" type="checkbox" disabled> Không có requirement mơ hồ chưa xử lý.</li>
+<li><input class="task-check" type="checkbox" disabled> Có implementation plan.</li>
+<li><input class="task-check" type="checkbox" disabled> Có test trước hoặc cùng lúc code.</li>
+<li><input class="task-check" type="checkbox" disabled> Code chỉ thay đổi phạm vi task.</li>
+<li><input class="task-check" type="checkbox" disabled> Không introduce dependency không được duyệt.</li>
+<li><input class="task-check" type="checkbox" disabled> Không hardcode secret/config nhạy cảm.</li>
+<li><input class="task-check" type="checkbox" disabled> Test local pass.</li>
+<li><input class="task-check" type="checkbox" disabled> Lint/typecheck pass.</li>
+<li><input class="task-check" type="checkbox" disabled> CI pass.</li>
+<li><input class="task-check" type="checkbox" disabled> Có PR summary.</li>
+<li><input class="task-check" type="checkbox" disabled> Có evidence log.</li>
+<li><input class="task-check" type="checkbox" disabled> Có rollback/migration note nếu cần.</li>
+</ul>
+<h2 id="8-6-gate-8-developer-done-gate"><a class="heading-anchor" href="#8-6-gate-8-developer-done-gate" aria-label="Liên kết tới mục này">#</a>8.6. Gate 8 — Developer Done Gate</h2>
+<p>Task chỉ được coi là done khi:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Tiêu chí</th>
+<th>Đạt khi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Đúng requirement</td>
+<td>Mapping AC rõ</td>
+</tr>
+<tr>
+<td>Có test</td>
+<td>Test mới/cũ pass</td>
+</tr>
+<tr>
+<td>Code sạch</td>
+<td>Lint/typecheck pass</td>
+</tr>
+<tr>
+<td>Review được</td>
+<td>PR nhỏ, mô tả rõ</td>
+</tr>
+<tr>
+<td>Không side effect</td>
+<td>Không đổi file ngoài scope</td>
+</tr>
+<tr>
+<td>Có evidence</td>
+<td>Có command/result</td>
+</tr>
+</tbody>
+</table></div>
+<hr>
+<h1 id="phase-9-code-review-security-review-va-merge-control"><a class="heading-anchor" href="#phase-9-code-review-security-review-va-merge-control" aria-label="Liên kết tới mục này">#</a>PHASE 9 — Code Review, Security Review và Merge Control</h1>
+<h2 id="9-1-muc-tieu"><a class="heading-anchor" href="#9-1-muc-tieu" aria-label="Liên kết tới mục này">#</a>9.1. Mục tiêu</h2>
+<p>Đảm bảo code được merge không chỉ “chạy được”, mà còn:</p>
+<ul>
+<li>Đúng requirement.</li>
+<li>Đúng architecture.</li>
+<li>Dễ maintain.</li>
+<li>An toàn.</li>
+<li>Có test.</li>
+<li>Có observability.</li>
+<li>Không tạo technical debt nguy hiểm.</li>
+<li>Không phá behavior cũ.</li>
+</ul>
+<h2 id="9-2-vong-review-nhieu-lop"><a class="heading-anchor" href="#9-2-vong-review-nhieu-lop" aria-label="Liên kết tới mục này">#</a>9.2. Vòng review nhiều lớp</h2>
+<div class="mermaid">flowchart LR
+    PR[&quot;Pull Request&quot;] --&gt; Self[&quot;Agent Self Review&quot;]
+    Self --&gt; Peer[&quot;Human Peer Review&quot;]
+    Peer --&gt; Arch[&quot;Architecture Review nếu cần&quot;]
+    Arch --&gt; QA[&quot;QA Review testability&quot;]
+    QA --&gt; Sec[&quot;Security Review&quot;]
+    Sec --&gt; CI[&quot;CI Required Checks&quot;]
+    CI --&gt; Gate{&quot;Merge Gate&quot;}
+    Gate --&gt;|Pass| Merge[&quot;Merge&quot;]
+    Gate --&gt;|Fail| Fix[&quot;Fix &amp; Re-review&quot;]
+    Fix --&gt; Self
+</div>
+<h2 id="9-3-pr-template-chuan"><a class="heading-anchor" href="#9-3-pr-template-chuan" aria-label="Liên kết tới mục này">#</a>9.3. PR template chuẩn</h2>
+<pre><code class="language-markdown"># PR Summary
+
+## Linked Items
+- Feature ID:
+- Requirement ID:
+- Task ID:
+- Issue:
+
+## What Changed
+- 
+
+## Why
+- 
+
+## Scope
+### In scope
+### Out of scope
+
+## Tests
+- [ ] Unit test
+- [ ] Integration test
+- [ ] E2E test
+- [ ] Manual test
+- [ ] Regression test
+
+## Commands Run
+~~~bash
+~~~
+
+## Evidence
+- Test result:
+- Screenshot/log:
+- CI link:
+
+## Risk
+- Risk level: Low/Medium/High
+- Rollback:
+- Migration:
+
+## Checklist
+- [ ] Meets acceptance criteria
+- [ ] No unrelated changes
+- [ ] No secrets
+- [ ] Logs/metrics added if needed
+- [ ] Docs updated
+</code></pre>
+<h2 id="9-4-ai-review-agent-checklist"><a class="heading-anchor" href="#9-4-ai-review-agent-checklist" aria-label="Liên kết tới mục này">#</a>9.4. AI Review Agent checklist</h2>
+<ul>
+<li><input class="task-check" type="checkbox" disabled> Code có đúng requirement ID không?</li>
+<li><input class="task-check" type="checkbox" disabled> Có test tương ứng acceptance criteria không?</li>
+<li><input class="task-check" type="checkbox" disabled> Có logic thừa/YAGNI không?</li>
+<li><input class="task-check" type="checkbox" disabled> Có duplicate code không?</li>
+<li><input class="task-check" type="checkbox" disabled> Có phá architecture không?</li>
+<li><input class="task-check" type="checkbox" disabled> Có missing error handling không?</li>
+<li><input class="task-check" type="checkbox" disabled> Có race condition/concurrency issue không?</li>
+<li><input class="task-check" type="checkbox" disabled> Có security issue không?</li>
+<li><input class="task-check" type="checkbox" disabled> Có performance issue không?</li>
+<li><input class="task-check" type="checkbox" disabled> Có observability/log thiếu không?</li>
+<li><input class="task-check" type="checkbox" disabled> Có migration/data compatibility risk không?</li>
+<li><input class="task-check" type="checkbox" disabled> Có breaking API không?</li>
+<li><input class="task-check" type="checkbox" disabled> Có document update không?</li>
+</ul>
+<h2 id="9-5-merge-policy"><a class="heading-anchor" href="#9-5-merge-policy" aria-label="Liên kết tới mục này">#</a>9.5. Merge policy</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Loại thay đổi</th>
+<th>Điều kiện merge</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Minor UI/copy</td>
+<td>1 reviewer + CI xanh</td>
+</tr>
+<tr>
+<td>Business logic</td>
+<td>1 dev reviewer + test coverage</td>
+</tr>
+<tr>
+<td>API/data schema</td>
+<td>Tech Lead/Architect review</td>
+</tr>
+<tr>
+<td>Security/auth/payment/permission</td>
+<td>Security review bắt buộc</td>
+</tr>
+<tr>
+<td>Migration</td>
+<td>DB owner + rollback plan</td>
+</tr>
+<tr>
+<td>Infra/deployment</td>
+<td>DevOps/SRE review</td>
+</tr>
+<tr>
+<td>AI/ML behavior</td>
+<td>Eval report + QA scenario pass</td>
+</tr>
+<tr>
+<td>Critical production bug</td>
+<td>Hotfix process + postmortem sau release</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="9-6-gate-9-merge-gate"><a class="heading-anchor" href="#9-6-gate-9-merge-gate" aria-label="Liên kết tới mục này">#</a>9.6. Gate 9 — Merge Gate</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Tiêu chí</th>
+<th>Đạt khi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PR linked requirement</td>
+<td>Có ID</td>
+</tr>
+<tr>
+<td>Test pass</td>
+<td>CI xanh</td>
+</tr>
+<tr>
+<td>Review pass</td>
+<td>Không còn critical/high comment</td>
+</tr>
+<tr>
+<td>Security pass</td>
+<td>Scan pass hoặc risk accepted</td>
+</tr>
+<tr>
+<td>Observability đủ</td>
+<td>Có log/metric nếu critical</td>
+</tr>
+<tr>
+<td>Docs update</td>
+<td>Nếu đổi behavior/API</td>
+</tr>
+<tr>
+<td>Rollback rõ</td>
+<td>Nếu có migration/release risk</td>
+</tr>
+</tbody>
+</table></div>
+<hr>
+<h1 id="phase-10-qa-regression-e2e-va-quality-engineering"><a class="heading-anchor" href="#phase-10-qa-regression-e2e-va-quality-engineering" aria-label="Liên kết tới mục này">#</a>PHASE 10 — QA, Regression, E2E và Quality Engineering</h1>
+<h2 id="10-1-muc-tieu"><a class="heading-anchor" href="#10-1-muc-tieu" aria-label="Liên kết tới mục này">#</a>10.1. Mục tiêu</h2>
+<p>QA không phải “test cuối kỳ”. QA là thiết kế chất lượng từ đầu.</p>
+<div class="mermaid">flowchart TB
+    Req[&quot;Requirement&quot;] --&gt; QAPlan[&quot;QA Strategy&quot;]
+    QAPlan --&gt; TestCase[&quot;Test Case&quot;]
+    TestCase --&gt; Auto[&quot;Automation&quot;]
+    Auto --&gt; CI[&quot;CI Regression&quot;]
+    CI --&gt; Exploratory[&quot;Exploratory Test&quot;]
+    Exploratory --&gt; Bug[&quot;Bug Report&quot;]
+    Bug --&gt; Fix[&quot;Fix&quot;]
+    Fix --&gt; Regression[&quot;Regression&quot;]
+    Regression --&gt; Signoff[&quot;QA Sign-off&quot;]
+</div>
+<h2 id="10-2-test-pyramid-mo-rong"><a class="heading-anchor" href="#10-2-test-pyramid-mo-rong" aria-label="Liên kết tới mục này">#</a>10.2. Test pyramid mở rộng</h2>
+<div class="mermaid">flowchart TB
+    E2E[&quot;E2E / User Journey\nÍt nhưng critical&quot;]
+    INT[&quot;Integration / API / Contract\nVừa phải&quot;]
+    UNIT[&quot;Unit / Component\nNhiều, nhanh&quot;]
+    PERF[&quot;Performance / Load&quot;]
+    SEC[&quot;Security&quot;]
+    AI[&quot;AI Eval / Scenario Eval&quot;]
+    UNIT --&gt; INT --&gt; E2E
+    PERF --&gt; E2E
+    SEC --&gt; E2E
+    AI --&gt; E2E
+</div>
+<h2 id="10-3-loai-test-bat-buoc"><a class="heading-anchor" href="#10-3-loai-test-bat-buoc" aria-label="Liên kết tới mục này">#</a>10.3. Loại test bắt buộc</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Loại test</th>
+<th>Khi nào bắt buộc</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Unit test</td>
+<td>Business logic, parser, validation, calculation</td>
+</tr>
+<tr>
+<td>Component test</td>
+<td>UI component có state/logic</td>
+</tr>
+<tr>
+<td>Integration test</td>
+<td>API, DB, service interaction</td>
+</tr>
+<tr>
+<td>Contract test</td>
+<td>Service/client dùng chung API</td>
+</tr>
+<tr>
+<td>E2E test</td>
+<td>Critical user journey</td>
+</tr>
+<tr>
+<td>Regression test</td>
+<td>Bug từng xảy ra</td>
+</tr>
+<tr>
+<td>Performance test</td>
+<td>Flow có target latency/throughput</td>
+</tr>
+<tr>
+<td>Security test</td>
+<td>Auth, permission, data, payment, sensitive flow</td>
+</tr>
+<tr>
+<td>Compatibility test</td>
+<td>Mobile/web/browser/device/firmware version</td>
+</tr>
+<tr>
+<td>Chaos/failure test</td>
+<td>Hệ thống phân tán, offline, timeout, retry</td>
+</tr>
+<tr>
+<td>AI Eval</td>
+<td>Feature có LLM/STT/TTS/vision/agent decision</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="10-4-bug-report-template"><a class="heading-anchor" href="#10-4-bug-report-template" aria-label="Liên kết tới mục này">#</a>10.4. Bug report template</h2>
+<pre><code class="language-markdown"># Bug Report
+
+## Summary
+- 
+
+## Environment
+- Version:
+- Device/browser:
+- Account/home/site:
+- Network:
+
+## Steps to Reproduce
+1.
+2.
+3.
+
+## Expected
+-
+
+## Actual
+-
+
+## Evidence
+- Screenshot/log/video:
+- Request ID / trace ID:
+- Timestamp:
+
+## Impact
+- Severity:
+- Frequency:
+- Affected users:
+
+## Suspected Area
+-
+
+## Linked Requirement
+-
+
+## Regression Test Needed
+- [ ] Yes
+- [ ] No
+</code></pre>
+<h2 id="10-5-ai-qa-agent-prompt"><a class="heading-anchor" href="#10-5-ai-qa-agent-prompt" aria-label="Liên kết tới mục này">#</a>10.5. AI QA Agent prompt</h2>
+<pre><code class="language-markdown">Bạn là QA Agent.
+
+Dựa trên PRD/SRS/UX/ADR sau, hãy tạo:
+1. Test strategy.
+2. Test matrix theo requirement ID.
+3. Test case Given‑When‑Then.
+4. Edge cases.
+5. Regression cases.
+6. Automation candidates.
+7. Risk-based priority.
+8. Dữ liệu test cần chuẩn bị.
+9. Checklist sign-off.
+
+Yêu cầu:
+- Không chỉ test happy path.
+- Mỗi test case phải map requirement/AC.
+- Chỉ rõ test nào nên tự động hóa.
+- Chỉ rõ test nào cần manual/exploratory.
+</code></pre>
+<h2 id="10-6-checklist-qa"><a class="heading-anchor" href="#10-6-checklist-qa" aria-label="Liên kết tới mục này">#</a>10.6. Checklist QA</h2>
+<ul>
+<li><input class="task-check" type="checkbox" disabled> Có test strategy.</li>
+<li><input class="task-check" type="checkbox" disabled> Có test matrix.</li>
+<li><input class="task-check" type="checkbox" disabled> Mỗi requirement có ít nhất một test.</li>
+<li><input class="task-check" type="checkbox" disabled> Critical flow có E2E/smoke.</li>
+<li><input class="task-check" type="checkbox" disabled> Bug fix có regression test.</li>
+<li><input class="task-check" type="checkbox" disabled> Có test data.</li>
+<li><input class="task-check" type="checkbox" disabled> Có môi trường test.</li>
+<li><input class="task-check" type="checkbox" disabled> Có performance/security test nếu liên quan.</li>
+<li><input class="task-check" type="checkbox" disabled> Có compatibility matrix.</li>
+<li><input class="task-check" type="checkbox" disabled> Có QA sign-off.</li>
+<li><input class="task-check" type="checkbox" disabled> Defect severity được phân loại.</li>
+<li><input class="task-check" type="checkbox" disabled> Không có blocker/critical open trước release.</li>
+<li><input class="task-check" type="checkbox" disabled> High severity có risk acceptance nếu chưa fix.</li>
+</ul>
+<h2 id="10-7-gate-10-qa-sign-off-gate"><a class="heading-anchor" href="#10-7-gate-10-qa-sign-off-gate" aria-label="Liên kết tới mục này">#</a>10.7. Gate 10 — QA Sign-off Gate</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Tiêu chí</th>
+<th>Đạt khi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Test coverage đủ</td>
+<td>Requirement → test matrix</td>
+</tr>
+<tr>
+<td>Critical pass</td>
+<td>Critical path pass</td>
+</tr>
+<tr>
+<td>Regression pass</td>
+<td>Không phá lỗi cũ</td>
+</tr>
+<tr>
+<td>Defect kiểm soát</td>
+<td>Không blocker/critical</td>
+</tr>
+<tr>
+<td>Evidence đủ</td>
+<td>Có report</td>
+</tr>
+<tr>
+<td>Risk rõ</td>
+<td>Known issue được chấp nhận</td>
+</tr>
+</tbody>
+</table></div>
+<hr>
+<h1 id="phase-11-uat-beta-va-feedback-loop"><a class="heading-anchor" href="#phase-11-uat-beta-va-feedback-loop" aria-label="Liên kết tới mục này">#</a>PHASE 11 — UAT, Beta và Feedback Loop</h1>
+<h2 id="11-1-muc-tieu"><a class="heading-anchor" href="#11-1-muc-tieu" aria-label="Liên kết tới mục này">#</a>11.1. Mục tiêu</h2>
+<p>Kiểm tra sản phẩm trong bối cảnh gần thực tế, với người dùng/stakeholder thật.</p>
+<p>UAT/Beta giúp phát hiện:</p>
+<ul>
+<li>Requirement hiểu sai.</li>
+<li>UX chưa tự nhiên.</li>
+<li>Hệ thống thiếu case thực tế.</li>
+<li>Performance không đủ trong điều kiện thật.</li>
+<li>Hành vi AI/voice không ổn định.</li>
+<li>Tài liệu/support chưa đủ.</li>
+</ul>
+<h2 id="11-2-beta-loop"><a class="heading-anchor" href="#11-2-beta-loop" aria-label="Liên kết tới mục này">#</a>11.2. Beta loop</h2>
+<div class="mermaid">flowchart LR
+    Build[&quot;Beta Build&quot;] --&gt; Users[&quot;Beta Users&quot;]
+    Users --&gt; Feedback[&quot;Feedback / Issue&quot;]
+    Feedback --&gt; Triage[&quot;Triage&quot;]
+    Triage --&gt; Classify[&quot;Bug / UX / Wish / Training / Doc&quot;]
+    Classify --&gt; Priority[&quot;Priority&quot;]
+    Priority --&gt; Fix[&quot;Fix / Improve&quot;]
+    Fix --&gt; Validate[&quot;Validate&quot;]
+    Validate --&gt; Build
+</div>
+<h2 id="11-3-feedback-classification"><a class="heading-anchor" href="#11-3-feedback-classification" aria-label="Liên kết tới mục này">#</a>11.3. Feedback classification</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Nhóm</th>
+<th>Ý nghĩa</th>
+<th>Xử lý</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Blocker</td>
+<td>Không dùng được core flow</td>
+<td>Fix trước release</td>
+</tr>
+<tr>
+<td>Critical Bug</td>
+<td>Gây mất data, sai quyền, crash, sai kết quả nghiêm trọng</td>
+<td>Fix ngay, RCA</td>
+</tr>
+<tr>
+<td>Functional Bug</td>
+<td>Sai requirement</td>
+<td>Fix theo priority</td>
+</tr>
+<tr>
+<td>UX Friction</td>
+<td>Dùng được nhưng khó hiểu/chậm</td>
+<td>UX improvement</td>
+</tr>
+<tr>
+<td>Performance Issue</td>
+<td>Chậm, lag, timeout, nóng máy, tốn pin</td>
+<td>Profiling + optimization</td>
+</tr>
+<tr>
+<td>AI Behavior Issue</td>
+<td>Agent/LLM/STT/TTS hiểu sai, phản hồi sai</td>
+<td>Add eval/test case/prompt/model fix</td>
+</tr>
+<tr>
+<td>Documentation Gap</td>
+<td>User/team không biết dùng</td>
+<td>Cập nhật docs</td>
+</tr>
+<tr>
+<td>Feature Wish</td>
+<td>Ý tưởng mới</td>
+<td>Đưa backlog, không làm loạn scope</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="11-4-checklist-uat-beta"><a class="heading-anchor" href="#11-4-checklist-uat-beta" aria-label="Liên kết tới mục này">#</a>11.4. Checklist UAT/Beta</h2>
+<ul>
+<li><input class="task-check" type="checkbox" disabled> Có beta scope.</li>
+<li><input class="task-check" type="checkbox" disabled> Có beta users/stakeholders.</li>
+<li><input class="task-check" type="checkbox" disabled> Có hướng dẫn test.</li>
+<li><input class="task-check" type="checkbox" disabled> Có kênh nhận feedback.</li>
+<li><input class="task-check" type="checkbox" disabled> Có template feedback.</li>
+<li><input class="task-check" type="checkbox" disabled> Có người triage hằng ngày.</li>
+<li><input class="task-check" type="checkbox" disabled> Có phân loại severity.</li>
+<li><input class="task-check" type="checkbox" disabled> Có SLA xử lý blocker/critical.</li>
+<li><input class="task-check" type="checkbox" disabled> Có dashboard beta.</li>
+<li><input class="task-check" type="checkbox" disabled> Có quyết định go/no-go.</li>
+<li><input class="task-check" type="checkbox" disabled> Có release notes cho beta.</li>
+<li><input class="task-check" type="checkbox" disabled> Có known issues.</li>
+</ul>
+<h2 id="11-5-gate-11-go-no-go-gate"><a class="heading-anchor" href="#11-5-gate-11-go-no-go-gate" aria-label="Liên kết tới mục này">#</a>11.5. Gate 11 — Go/No-Go Gate</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Tiêu chí</th>
+<th>Go khi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Core flow</td>
+<td>Pass</td>
+</tr>
+<tr>
+<td>Blocker</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Critical</td>
+<td>0 hoặc có risk acceptance cực rõ</td>
+</tr>
+<tr>
+<td>UAT sign-off</td>
+<td>Có</td>
+</tr>
+<tr>
+<td>Support docs</td>
+<td>Có</td>
+</tr>
+<tr>
+<td>Rollback</td>
+<td>Có</td>
+</tr>
+<tr>
+<td>Monitoring</td>
+<td>Có</td>
+</tr>
+</tbody>
+</table></div>
+<hr>
+<h1 id="phase-12-release-deployment-va-change-management"><a class="heading-anchor" href="#phase-12-release-deployment-va-change-management" aria-label="Liên kết tới mục này">#</a>PHASE 12 — Release, Deployment và Change Management</h1>
+<h2 id="12-1-muc-tieu"><a class="heading-anchor" href="#12-1-muc-tieu" aria-label="Liên kết tới mục này">#</a>12.1. Mục tiêu</h2>
+<p>Release an toàn, có kiểm soát, có rollback, có truyền thông, có monitoring.</p>
+<h2 id="12-2-release-flow"><a class="heading-anchor" href="#12-2-release-flow" aria-label="Liên kết tới mục này">#</a>12.2. Release flow</h2>
+<div class="mermaid">flowchart TB
+    Candidate[&quot;Release Candidate&quot;] --&gt; Freeze[&quot;Code Freeze nếu cần&quot;]
+    Freeze --&gt; Smoke[&quot;Smoke Test&quot;]
+    Smoke --&gt; Notes[&quot;Release Notes&quot;]
+    Notes --&gt; Approval[&quot;Release Approval&quot;]
+    Approval --&gt; Deploy[&quot;Deploy&quot;]
+    Deploy --&gt; Verify[&quot;Post-deploy Verification&quot;]
+    Verify --&gt; Monitor[&quot;Monitor&quot;]
+    Monitor --&gt; Stable{&quot;Stable?&quot;}
+    Stable --&gt;|Có| Close[&quot;Close Release&quot;]
+    Stable --&gt;|Không| Rollback[&quot;Rollback / Hotfix&quot;]
+    Rollback --&gt; Post[&quot;Postmortem&quot;]
+</div>
+<h2 id="12-3-release-checklist"><a class="heading-anchor" href="#12-3-release-checklist" aria-label="Liên kết tới mục này">#</a>12.3. Release checklist</h2>
+<h3 id="truoc-release"><a class="heading-anchor" href="#truoc-release" aria-label="Liên kết tới mục này">#</a>Trước release</h3>
+<ul>
+<li><input class="task-check" type="checkbox" disabled> Version/tag xác định.</li>
+<li><input class="task-check" type="checkbox" disabled> Release scope rõ.</li>
+<li><input class="task-check" type="checkbox" disabled> PR đã merge.</li>
+<li><input class="task-check" type="checkbox" disabled> CI xanh.</li>
+<li><input class="task-check" type="checkbox" disabled> QA sign-off.</li>
+<li><input class="task-check" type="checkbox" disabled> UAT sign-off nếu cần.</li>
+<li><input class="task-check" type="checkbox" disabled> Migration plan.</li>
+<li><input class="task-check" type="checkbox" disabled> Rollback plan.</li>
+<li><input class="task-check" type="checkbox" disabled> Feature flag nếu cần.</li>
+<li><input class="task-check" type="checkbox" disabled> Monitoring/alert sẵn sàng.</li>
+<li><input class="task-check" type="checkbox" disabled> Support/on-call biết lịch release.</li>
+<li><input class="task-check" type="checkbox" disabled> Release notes.</li>
+<li><input class="task-check" type="checkbox" disabled> Known issues.</li>
+<li><input class="task-check" type="checkbox" disabled> Customer/stakeholder communication.</li>
+</ul>
+<h3 id="trong-release"><a class="heading-anchor" href="#trong-release" aria-label="Liên kết tới mục này">#</a>Trong release</h3>
+<ul>
+<li><input class="task-check" type="checkbox" disabled> Người release xác định.</li>
+<li><input class="task-check" type="checkbox" disabled> Người monitor xác định.</li>
+<li><input class="task-check" type="checkbox" disabled> Người quyết định rollback xác định.</li>
+<li><input class="task-check" type="checkbox" disabled> Deploy theo checklist.</li>
+<li><input class="task-check" type="checkbox" disabled> Ghi log thời gian.</li>
+<li><input class="task-check" type="checkbox" disabled> Verify critical path.</li>
+<li><input class="task-check" type="checkbox" disabled> Theo dõi error/latency/crash.</li>
+</ul>
+<h3 id="sau-release"><a class="heading-anchor" href="#sau-release" aria-label="Liên kết tới mục này">#</a>Sau release</h3>
+<ul>
+<li><input class="task-check" type="checkbox" disabled> Confirm metrics ổn.</li>
+<li><input class="task-check" type="checkbox" disabled> Cập nhật status.</li>
+<li><input class="task-check" type="checkbox" disabled> Cập nhật docs.</li>
+<li><input class="task-check" type="checkbox" disabled> Đóng release ticket.</li>
+<li><input class="task-check" type="checkbox" disabled> Tạo retrospective nếu có issue.</li>
+<li><input class="task-check" type="checkbox" disabled> Theo dõi 24–72h với release quan trọng.</li>
+</ul>
+<h2 id="12-4-release-note-template"><a class="heading-anchor" href="#12-4-release-note-template" aria-label="Liên kết tới mục này">#</a>12.4. Release note template</h2>
+<pre><code class="language-markdown"># Release Notes vX.Y.Z
+
+## Summary
+-
+
+## New Features
+-
+
+## Improvements
+-
+
+## Bug Fixes
+-
+
+## Breaking Changes
+-
+
+## Migration
+-
+
+## Known Issues
+-
+
+## Rollback Plan
+-
+
+## Monitoring
+- Dashboard:
+- Alerts:
+- Owner:
+</code></pre>
+<h2 id="12-5-gate-12-release-gate"><a class="heading-anchor" href="#12-5-gate-12-release-gate" aria-label="Liên kết tới mục này">#</a>12.5. Gate 12 — Release Gate</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Tiêu chí</th>
+<th>Đạt khi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Scope rõ</td>
+<td>Release notes có</td>
+</tr>
+<tr>
+<td>Quality pass</td>
+<td>QA/UAT sign-off</td>
+</tr>
+<tr>
+<td>Deploy an toàn</td>
+<td>Rollback/feature flag</td>
+</tr>
+<tr>
+<td>Vận hành được</td>
+<td>Monitoring/alert</td>
+</tr>
+<tr>
+<td>Support sẵn</td>
+<td>Hướng dẫn/known issues</td>
+</tr>
+<tr>
+<td>Owner rõ</td>
+<td>On-call/release manager</td>
+</tr>
+</tbody>
+</table></div>
+<hr>
+<h1 id="phase-13-monitoring-incident-va-rollback"><a class="heading-anchor" href="#phase-13-monitoring-incident-va-rollback" aria-label="Liên kết tới mục này">#</a>PHASE 13 — Monitoring, Incident và Rollback</h1>
+<h2 id="13-1-muc-tieu"><a class="heading-anchor" href="#13-1-muc-tieu" aria-label="Liên kết tới mục này">#</a>13.1. Mục tiêu</h2>
+<p>Sau release, hệ thống phải được quan sát và xử lý sự cố nhanh.</p>
+<div class="mermaid">flowchart LR
+    Metrics[&quot;Metrics&quot;] --&gt; Alert[&quot;Alert&quot;]
+    Logs[&quot;Logs&quot;] --&gt; Alert
+    Traces[&quot;Traces&quot;] --&gt; Alert
+    Alert --&gt; Triage[&quot;Triage&quot;]
+    Triage --&gt; Severity[&quot;Severity&quot;]
+    Severity --&gt; Mitigate[&quot;Mitigation&quot;]
+    Mitigate --&gt; Fix[&quot;Fix/Hotfix/Rollback&quot;]
+    Fix --&gt; Verify[&quot;Verify&quot;]
+    Verify --&gt; Postmortem[&quot;Postmortem&quot;]
+    Postmortem --&gt; Prevent[&quot;Prevent Recurrence&quot;]
+</div>
+<h2 id="13-2-incident-severity"><a class="heading-anchor" href="#13-2-incident-severity" aria-label="Liên kết tới mục này">#</a>13.2. Incident severity</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Severity</th>
+<th>Mô tả</th>
+<th>SLA phản ứng</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SEV0</td>
+<td>Mất data, sai quyền nghiêm trọng, production down diện rộng</td>
+<td>Ngay lập tức</td>
+</tr>
+<tr>
+<td>SEV1</td>
+<td>Core flow không dùng được cho nhiều user</td>
+<td>Rất nhanh</td>
+</tr>
+<tr>
+<td>SEV2</td>
+<td>Lỗi quan trọng nhưng có workaround</td>
+<td>Trong ngày</td>
+</tr>
+<tr>
+<td>SEV3</td>
+<td>Lỗi nhỏ, không ảnh hưởng core</td>
+<td>Theo sprint</td>
+</tr>
+<tr>
+<td>SEV4</td>
+<td>Cosmetic/doc</td>
+<td>Backlog</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="13-3-runbook-template"><a class="heading-anchor" href="#13-3-runbook-template" aria-label="Liên kết tới mục này">#</a>13.3. Runbook template</h2>
+<pre><code class="language-markdown"># Runbook: &lt;Tên hệ thống/feature&gt;
+
+## Overview
+-
+
+## Owner
+- Primary:
+- Backup:
+
+## Dashboards
+-
+
+## Alerts
+-
+
+## Common Incidents
+### Incident A
+- Symptom:
+- Check:
+- Mitigation:
+- Rollback:
+- Escalation:
+
+## Verification
+-
+
+## Related Docs
+-
+</code></pre>
+<h2 id="13-4-postmortem-template"><a class="heading-anchor" href="#13-4-postmortem-template" aria-label="Liên kết tới mục này">#</a>13.4. Postmortem template</h2>
+<pre><code class="language-markdown"># Postmortem: &lt;Incident ID&gt;
+
+## Summary
+-
+
+## Timeline
+| Time | Event |
+|---|---|
+
+## Impact
+- Users affected:
+- Business impact:
+- Data/security impact:
+
+## Root Cause
+-
+
+## What Went Well
+-
+
+## What Went Wrong
+-
+
+## Detection Gap
+-
+
+## Action Items
+| Action | Owner | Due Date | Prevents |
+|---|---|---|---|
+
+## Lessons Learned
+-
+</code></pre>
+<h2 id="13-5-ai-agent-trong-van-hanh"><a class="heading-anchor" href="#13-5-ai-agent-trong-van-hanh" aria-label="Liên kết tới mục này">#</a>13.5. AI Agent trong vận hành</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Agent</th>
+<th>Công việc</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SRE Agent</td>
+<td>Tóm tắt alert/log/trace</td>
+</tr>
+<tr>
+<td>Incident Triage Agent</td>
+<td>Phân loại severity</td>
+</tr>
+<tr>
+<td>RCA Agent</td>
+<td>Tìm timeline/root cause</td>
+</tr>
+<tr>
+<td>Hotfix Agent</td>
+<td>Đề xuất fix nhỏ có test</td>
+</tr>
+<tr>
+<td>Doc Agent</td>
+<td>Tạo postmortem/runbook</td>
+</tr>
+<tr>
+<td>Program Radar Agent</td>
+<td>Nhắc action item quá hạn</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="13-6-gate-13-incident-closure-gate"><a class="heading-anchor" href="#13-6-gate-13-incident-closure-gate" aria-label="Liên kết tới mục này">#</a>13.6. Gate 13 — Incident Closure Gate</h2>
+<p>Incident chỉ được đóng khi:</p>
+<ul>
+<li><input class="task-check" type="checkbox" disabled> Đã khôi phục dịch vụ.</li>
+<li><input class="task-check" type="checkbox" disabled> Đã xác minh metric trở lại bình thường.</li>
+<li><input class="task-check" type="checkbox" disabled> Đã có root cause hoặc giả thuyết hợp lý.</li>
+<li><input class="task-check" type="checkbox" disabled> Đã tạo action item phòng tái diễn.</li>
+<li><input class="task-check" type="checkbox" disabled> Đã cập nhật runbook/test/alert nếu thiếu.</li>
+<li><input class="task-check" type="checkbox" disabled> Đã truyền thông stakeholder nếu cần.</li>
+</ul>
+<hr>
+<h1 id="phase-14-retrospective-knowledge-base-va-continuous-improvement"><a class="heading-anchor" href="#phase-14-retrospective-knowledge-base-va-continuous-improvement" aria-label="Liên kết tới mục này">#</a>PHASE 14 — Retrospective, Knowledge Base và Continuous Improvement</h1>
+<h2 id="14-1-muc-tieu"><a class="heading-anchor" href="#14-1-muc-tieu" aria-label="Liên kết tới mục này">#</a>14.1. Mục tiêu</h2>
+<p>Mỗi dự án/release/incident phải làm tổ chức thông minh hơn.</p>
+<div class="mermaid">flowchart TB
+    Done[&quot;Project/Release Done&quot;] --&gt; Retro[&quot;Retrospective&quot;]
+    Retro --&gt; Learn[&quot;Lessons Learned&quot;]
+    Learn --&gt; UpdateSpec[&quot;Update Template/Checklist&quot;]
+    Learn --&gt; UpdateAgent[&quot;Update AGENTS.md / Prompt / Skill&quot;]
+    Learn --&gt; UpdateTest[&quot;Update Test/Eval&quot;]
+    Learn --&gt; UpdateRunbook[&quot;Update Runbook&quot;]
+    UpdateSpec --&gt; Next[&quot;Next Project Faster&quot;]
+    UpdateAgent --&gt; Next
+    UpdateTest --&gt; Next
+    UpdateRunbook --&gt; Next
+</div>
+<h2 id="14-2-retro-questions"><a class="heading-anchor" href="#14-2-retro-questions" aria-label="Liên kết tới mục này">#</a>14.2. Retro questions</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Nhóm</th>
+<th>Câu hỏi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Product</td>
+<td>Mục tiêu có rõ không? Scope có đổi không? KPI có đo được không?</td>
+</tr>
+<tr>
+<td>Spec</td>
+<td>PRD/SRS có thiếu gì? AC có testable không?</td>
+</tr>
+<tr>
+<td>UX</td>
+<td>Có missing state/edge case không?</td>
+</tr>
+<tr>
+<td>Architecture</td>
+<td>ADR có đúng không? Có technical debt mới không?</td>
+</tr>
+<tr>
+<td>Dev</td>
+<td>Task có đủ nhỏ không? AI Agent làm hiệu quả không?</td>
+</tr>
+<tr>
+<td>QA</td>
+<td>Lỗi phát hiện muộn vì sao? Test automation thiếu gì?</td>
+</tr>
+<tr>
+<td>Release</td>
+<td>Release có an toàn không? Rollback/monitoring đủ không?</td>
+</tr>
+<tr>
+<td>Process</td>
+<td>Gate nào bị bỏ qua? Vì sao?</td>
+</tr>
+<tr>
+<td>AI</td>
+<td>Prompt/AGENTS.md/Superpowers skill cần cải thiện gì?</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="14-3-checklist-phase-14"><a class="heading-anchor" href="#14-3-checklist-phase-14" aria-label="Liên kết tới mục này">#</a>14.3. Checklist Phase 14</h2>
+<ul>
+<li><input class="task-check" type="checkbox" disabled> Có retrospective.</li>
+<li><input class="task-check" type="checkbox" disabled> Có lessons learned.</li>
+<li><input class="task-check" type="checkbox" disabled> Có action item.</li>
+<li><input class="task-check" type="checkbox" disabled> Có owner/due date.</li>
+<li><input class="task-check" type="checkbox" disabled> Có cập nhật template/checklist nếu cần.</li>
+<li><input class="task-check" type="checkbox" disabled> Có cập nhật prompt/AGENTS.md nếu AI agent fail.</li>
+<li><input class="task-check" type="checkbox" disabled> Có cập nhật test/eval nếu defect escape.</li>
+<li><input class="task-check" type="checkbox" disabled> Có cập nhật docs/runbook.</li>
+<li><input class="task-check" type="checkbox" disabled> Có báo cáo summary cho stakeholder.</li>
+<li><input class="task-check" type="checkbox" disabled> Có metric cải tiến cho cycle sau.</li>
+</ul>
+<hr>
+<h1 id="5-quality-gate-matrix-toan-quy-trinh"><a class="heading-anchor" href="#5-quality-gate-matrix-toan-quy-trinh" aria-label="Liên kết tới mục này">#</a>5. Quality Gate Matrix toàn quy trình</h1>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Phase</th>
+<th>Gate</th>
+<th>Người duyệt</th>
+<th>AI Agent hỗ trợ</th>
+<th>Không đạt thì</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P0</td>
+<td>Governance Ready</td>
+<td>Engineering Lead/PMO</td>
+<td>Process Agent</td>
+<td>Chưa start</td>
+</tr>
+<tr>
+<td>P1</td>
+<td>Problem Clarity</td>
+<td>PM/PO/Sponsor</td>
+<td>Discovery Agent</td>
+<td>Làm rõ lại</td>
+</tr>
+<tr>
+<td>P2</td>
+<td>PRD Ready</td>
+<td>PM/PO/Sponsor</td>
+<td>PRD Agent</td>
+<td>Sửa PRD</td>
+</tr>
+<tr>
+<td>P3</td>
+<td>SRS Testable</td>
+<td>BA/QA/Dev</td>
+<td>SRS + QA Agent</td>
+<td>Sửa requirement</td>
+</tr>
+<tr>
+<td>P4</td>
+<td>UX Handoff</td>
+<td>UX/PM/Dev/QA</td>
+<td>UX Agent</td>
+<td>Bổ sung flow/state</td>
+</tr>
+<tr>
+<td>P5</td>
+<td>Architecture Approved</td>
+<td>Architect/Tech Lead</td>
+<td>Architect Agent</td>
+<td>Viết ADR/mitigation</td>
+</tr>
+<tr>
+<td>P6</td>
+<td>Plan Ready</td>
+<td>PM/Tech Lead/QA</td>
+<td>Planning Agent</td>
+<td>Breakdown lại</td>
+</tr>
+<tr>
+<td>P7</td>
+<td>Automation Baseline</td>
+<td>DevOps/Tech Lead</td>
+<td>SRE Agent</td>
+<td>Setup CI/test</td>
+</tr>
+<tr>
+<td>P8</td>
+<td>Dev Done</td>
+<td>Dev/Agent</td>
+<td>Dev Agent</td>
+<td>Fix/test lại</td>
+</tr>
+<tr>
+<td>P9</td>
+<td>Merge Ready</td>
+<td>Reviewer/Code Owner</td>
+<td>Review Agent</td>
+<td>Block merge</td>
+</tr>
+<tr>
+<td>P10</td>
+<td>QA Sign-off</td>
+<td>QA Lead</td>
+<td>QA Agent</td>
+<td>Fix bug</td>
+</tr>
+<tr>
+<td>P11</td>
+<td>Go/No-Go</td>
+<td>PM/QA/Tech/Sponsor</td>
+<td>Program Radar</td>
+<td>Hold release</td>
+</tr>
+<tr>
+<td>P12</td>
+<td>Release Ready</td>
+<td>Release Manager/SRE</td>
+<td>Release Agent</td>
+<td>Không deploy</td>
+</tr>
+<tr>
+<td>P13</td>
+<td>Incident Closed</td>
+<td>SRE/Owner</td>
+<td>RCA Agent</td>
+<td>Không close</td>
+</tr>
+<tr>
+<td>P14</td>
+<td>Learning Closed</td>
+<td>PMO/Lead</td>
+<td>Doc Agent</td>
+<td>Không đóng project</td>
+</tr>
+</tbody>
+</table></div>
+<hr>
+<h1 id="6-definition-of-ready-va-definition-of-done"><a class="heading-anchor" href="#6-definition-of-ready-va-definition-of-done" aria-label="Liên kết tới mục này">#</a>6. Definition of Ready và Definition of Done</h1>
+<h2 id="6-1-definition-of-ready-cho-feature"><a class="heading-anchor" href="#6-1-definition-of-ready-cho-feature" aria-label="Liên kết tới mục này">#</a>6.1. Definition of Ready cho feature</h2>
+<p>Feature được đưa vào development khi:</p>
+<ul>
+<li><input class="task-check" type="checkbox" disabled> Có PRD approved.</li>
+<li><input class="task-check" type="checkbox" disabled> Có SRS approved.</li>
+<li><input class="task-check" type="checkbox" disabled> Có acceptance criteria.</li>
+<li><input class="task-check" type="checkbox" disabled> Có UX flow/state nếu ảnh hưởng UI.</li>
+<li><input class="task-check" type="checkbox" disabled> Có ADR nếu ảnh hưởng kiến trúc.</li>
+<li><input class="task-check" type="checkbox" disabled> Có task breakdown.</li>
+<li><input class="task-check" type="checkbox" disabled> Có test strategy.</li>
+<li><input class="task-check" type="checkbox" disabled> Có owner.</li>
+<li><input class="task-check" type="checkbox" disabled> Có risk assessment.</li>
+<li><input class="task-check" type="checkbox" disabled> Có dependency rõ.</li>
+<li><input class="task-check" type="checkbox" disabled> Có estimate.</li>
+<li><input class="task-check" type="checkbox" disabled> Không còn blocker về thông tin.</li>
+</ul>
+<h2 id="6-2-definition-of-ready-cho-task"><a class="heading-anchor" href="#6-2-definition-of-ready-cho-task" aria-label="Liên kết tới mục này">#</a>6.2. Definition of Ready cho task</h2>
+<p>Task được nhận khi:</p>
+<ul>
+<li><input class="task-check" type="checkbox" disabled> Có Task ID.</li>
+<li><input class="task-check" type="checkbox" disabled> Có Requirement/AC liên kết.</li>
+<li><input class="task-check" type="checkbox" disabled> Có input/output.</li>
+<li><input class="task-check" type="checkbox" disabled> Có file/module liên quan.</li>
+<li><input class="task-check" type="checkbox" disabled> Có test required.</li>
+<li><input class="task-check" type="checkbox" disabled> Có verification commands.</li>
+<li><input class="task-check" type="checkbox" disabled> Có out-of-scope.</li>
+<li><input class="task-check" type="checkbox" disabled> Có dependency.</li>
+<li><input class="task-check" type="checkbox" disabled> Có owner.</li>
+<li><input class="task-check" type="checkbox" disabled> Có priority.</li>
+</ul>
+<h2 id="6-3-definition-of-done-cho-task"><a class="heading-anchor" href="#6-3-definition-of-done-cho-task" aria-label="Liên kết tới mục này">#</a>6.3. Definition of Done cho task</h2>
+<p>Task được đóng khi:</p>
+<ul>
+<li><input class="task-check" type="checkbox" disabled> Code đúng requirement.</li>
+<li><input class="task-check" type="checkbox" disabled> Test pass.</li>
+<li><input class="task-check" type="checkbox" disabled> CI pass.</li>
+<li><input class="task-check" type="checkbox" disabled> Review pass.</li>
+<li><input class="task-check" type="checkbox" disabled> Không có critical/high issue.</li>
+<li><input class="task-check" type="checkbox" disabled> Docs update nếu cần.</li>
+<li><input class="task-check" type="checkbox" disabled> Evidence log đầy đủ.</li>
+<li><input class="task-check" type="checkbox" disabled> Không có unrelated changes.</li>
+<li><input class="task-check" type="checkbox" disabled> Không có secret/security issue.</li>
+<li><input class="task-check" type="checkbox" disabled> PR merged hoặc được chấp thuận.</li>
+</ul>
+<h2 id="6-4-definition-of-done-cho-release"><a class="heading-anchor" href="#6-4-definition-of-done-cho-release" aria-label="Liên kết tới mục này">#</a>6.4. Definition of Done cho release</h2>
+<p>Release được đóng khi:</p>
+<ul>
+<li><input class="task-check" type="checkbox" disabled> Deploy thành công.</li>
+<li><input class="task-check" type="checkbox" disabled> Smoke test pass.</li>
+<li><input class="task-check" type="checkbox" disabled> Monitoring ổn.</li>
+<li><input class="task-check" type="checkbox" disabled> Không có incident nghiêm trọng sau release window.</li>
+<li><input class="task-check" type="checkbox" disabled> Release notes published.</li>
+<li><input class="task-check" type="checkbox" disabled> Known issues documented.</li>
+<li><input class="task-check" type="checkbox" disabled> Support/on-call informed.</li>
+<li><input class="task-check" type="checkbox" disabled> Feedback channel mở.</li>
+<li><input class="task-check" type="checkbox" disabled> Lessons learned cập nhật.</li>
+</ul>
+<hr>
+<h1 id="7-mo-hinh-ai-agent-plugin-superpowers-trong-thuc-chien"><a class="heading-anchor" href="#7-mo-hinh-ai-agent-plugin-superpowers-trong-thuc-chien" aria-label="Liên kết tới mục này">#</a>7. Mô hình AI Agent + Plugin Superpowers trong thực chiến</h1>
+<h2 id="7-1-agent-operating-loop"><a class="heading-anchor" href="#7-1-agent-operating-loop" aria-label="Liên kết tới mục này">#</a>7.1. Agent Operating Loop</h2>
+<div class="mermaid">sequenceDiagram
+    participant Human as Human Owner
+    participant Orchestrator as AI Orchestrator
+    participant Agent as Specialist Agent
+    participant Tools as Plugins/Tools
+    participant Repo as GitHub Repo
+    participant CI as CI/CD
+    participant Reviewer as Human Reviewer
+
+    Human-&gt;&gt;Orchestrator: Giao mục tiêu + context
+    Orchestrator-&gt;&gt;Agent: Phân công task + constraint
+    Agent-&gt;&gt;Repo: Đọc PRD/SRS/ADR/Code
+    Agent-&gt;&gt;Tools: Kích hoạt Superpowers skill
+    Agent-&gt;&gt;Human: Hỏi clarification nếu mơ hồ
+    Human-&gt;&gt;Agent: Chốt assumption
+    Agent-&gt;&gt;Repo: Tạo branch/worktree
+    Agent-&gt;&gt;Repo: Viết test/code
+    Agent-&gt;&gt;CI: Chạy verification
+    CI--&gt;&gt;Agent: Kết quả
+    Agent-&gt;&gt;Agent: Self-review/fix
+    Agent-&gt;&gt;Repo: Tạo PR
+    Reviewer-&gt;&gt;Repo: Review
+    Agent-&gt;&gt;Repo: Sửa theo review
+    Reviewer-&gt;&gt;Repo: Approve/Merge
+</div>
+<h2 id="7-2-quyen-han-cua-ai-agent"><a class="heading-anchor" href="#7-2-quyen-han-cua-ai-agent" aria-label="Liên kết tới mục này">#</a>7.2. Quyền hạn của AI Agent</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Cấp độ</th>
+<th>Mô tả</th>
+<th>Agent được làm</th>
+<th>Agent không được làm</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>L0</td>
+<td>Read-only</td>
+<td>Đọc repo/docs/log</td>
+<td>Không sửa</td>
+</tr>
+<tr>
+<td>L1</td>
+<td>Draft</td>
+<td>Tạo draft spec/plan/test</td>
+<td>Không commit</td>
+</tr>
+<tr>
+<td>L2</td>
+<td>Branch</td>
+<td>Tạo branch/code/test</td>
+<td>Không merge</td>
+</tr>
+<tr>
+<td>L3</td>
+<td>PR</td>
+<td>Tạo PR, sửa theo review</td>
+<td>Không deploy</td>
+</tr>
+<tr>
+<td>L4</td>
+<td>Controlled Release</td>
+<td>Deploy staging, tạo release candidate</td>
+<td>Không production nếu chưa approve</td>
+</tr>
+<tr>
+<td>L5</td>
+<td>Production Automation</td>
+<td>Hotfix/release theo policy</td>
+<td>Không vượt guardrail/security</td>
+</tr>
+</tbody>
+</table></div>
+<p>Khuyến nghị triển khai ban đầu: <strong>L1 → L2 → L3</strong>, chỉ lên L4/L5 khi CI/CD, test, monitoring, rollback đã rất mạnh.</p>
+<hr>
+<h2 id="7-3-plugin-superpowers-nen-nam-o-dau"><a class="heading-anchor" href="#7-3-plugin-superpowers-nen-nam-o-dau" aria-label="Liên kết tới mục này">#</a>7.3. Plugin Superpowers nên nằm ở đâu?</h2>
+<div class="mermaid">flowchart TB
+    Human[&quot;Human Owner&quot;] --&gt; Harness[&quot;Coding Harness\nCodex / Claude Code / Cursor / Copilot CLI&quot;]
+    Harness --&gt; Super[&quot;Superpowers Plugin&quot;]
+    Super --&gt; Skill1[&quot;Brainstorming&quot;]
+    Super --&gt; Skill2[&quot;Writing Plans&quot;]
+    Super --&gt; Skill3[&quot;TDD&quot;]
+    Super --&gt; Skill4[&quot;Systematic Debugging&quot;]
+    Super --&gt; Skill5[&quot;Code Review&quot;]
+    Super --&gt; Skill6[&quot;Git Worktrees&quot;]
+    Super --&gt; Skill7[&quot;Finish Branch&quot;]
+
+    Harness --&gt; Repo[&quot;Repository&quot;]
+    Harness --&gt; CI[&quot;CI/CD&quot;]
+    Harness --&gt; Docs[&quot;Docs&quot;]
+    Harness --&gt; Issue[&quot;Issues/Tasks&quot;]
+</div>
+<p>Superpowers nên được xem là <strong>bộ phản xạ kỹ thuật mặc định</strong> của coding agent.</p>
+<hr>
+<h2 id="7-4-khi-nao-nen-dung-nhieu-sub-agent"><a class="heading-anchor" href="#7-4-khi-nao-nen-dung-nhieu-sub-agent" aria-label="Liên kết tới mục này">#</a>7.4. Khi nào nên dùng nhiều sub‑agent?</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Trường hợp</th>
+<th>Có nên dùng sub‑agent?</th>
+<th>Ghi chú</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Nhiều module độc lập</td>
+<td>Có</td>
+<td>Chạy song song</td>
+</tr>
+<tr>
+<td>Refactor lớn</td>
+<td>Có nhưng cần plan/ADR</td>
+<td>Dễ conflict</td>
+</tr>
+<tr>
+<td>Bug khó chưa rõ root cause</td>
+<td>Có</td>
+<td>Một agent phân tích log, một agent đọc code</td>
+</tr>
+<tr>
+<td>UI + API + test song song</td>
+<td>Có</td>
+<td>Cần contract rõ</td>
+</tr>
+<tr>
+<td>Requirement mơ hồ</td>
+<td>Không</td>
+<td>Phải làm rõ trước</td>
+</tr>
+<tr>
+<td>Architecture chưa chốt</td>
+<td>Không</td>
+<td>Dễ sinh code sai hướng</td>
+</tr>
+<tr>
+<td>Test harness yếu</td>
+<td>Hạn chế</td>
+<td>Agent sẽ báo xong nhưng khó verify</td>
+</tr>
+</tbody>
+</table></div>
+<hr>
+<h1 id="8-bo-prompt-chuan-cho-tung-vai-tro-ai-agent"><a class="heading-anchor" href="#8-bo-prompt-chuan-cho-tung-vai-tro-ai-agent" aria-label="Liên kết tới mục này">#</a>8. Bộ prompt chuẩn cho từng vai trò AI Agent</h1>
+<h2 id="8-1-prompt-product-discovery-agent"><a class="heading-anchor" href="#8-1-prompt-product-discovery-agent" aria-label="Liên kết tới mục này">#</a>8.1. Prompt Product Discovery Agent</h2>
+<pre><code class="language-markdown">Bạn là Product Discovery Agent.
+
+Nhiệm vụ:
+- Không vội đề xuất feature.
+- Hỏi để làm rõ vấn đề thật, user thật, bối cảnh thật.
+- Tách symptom khỏi root problem.
+- Tìm business impact và success metric.
+
+Input:
+&lt;ý tưởng/thông tin ban đầu&gt;
+
+Output:
+1. Problem statement.
+2. User segment.
+3. Evidence needed.
+4. Hypothesis.
+5. Success metrics.
+6. Scope suggestion.
+7. Risks.
+8. Questions cần con người trả lời.
+</code></pre>
+<h2 id="8-2-prompt-prd-agent"><a class="heading-anchor" href="#8-2-prompt-prd-agent" aria-label="Liên kết tới mục này">#</a>8.2. Prompt PRD Agent</h2>
+<pre><code class="language-markdown">Bạn là PRD Agent.
+
+Hãy tạo PRD tiếng Việt có cấu trúc:
+1. Executive summary.
+2. Problem statement.
+3. Persona.
+4. Goals/non-goals.
+5. Scope/out-of-scope.
+6. User stories.
+7. Product requirements.
+8. Success metrics.
+9. Risks/assumptions.
+10. Release milestones.
+
+Quy tắc:
+- Không bịa metric nếu không có dữ liệu; hãy ghi assumption.
+- Mỗi requirement phải có ID.
+- Mỗi goal phải đo được.
+</code></pre>
+<h2 id="8-3-prompt-srs-agent"><a class="heading-anchor" href="#8-3-prompt-srs-agent" aria-label="Liên kết tới mục này">#</a>8.3. Prompt SRS Agent</h2>
+<pre><code class="language-markdown">Bạn là SRS Agent.
+
+Từ PRD sau, hãy tạo SRS testable:
+- Functional requirements.
+- Business rules.
+- Main/alternative/error flows.
+- Non-functional requirements.
+- Data/API requirements.
+- Security/privacy requirements.
+- Observability requirements.
+- Acceptance criteria Given‑When‑Then.
+
+Quy tắc:
+- Mỗi requirement có ID.
+- Không dùng từ mơ hồ nếu chưa định lượng.
+- Nếu thiếu thông tin, tạo danh sách clarification.
+</code></pre>
+<h2 id="8-4-prompt-architect-agent"><a class="heading-anchor" href="#8-4-prompt-architect-agent" aria-label="Liên kết tới mục này">#</a>8.4. Prompt Architect Agent</h2>
+<pre><code class="language-markdown">Bạn là Software Architect Agent.
+
+Hãy thiết kế kiến trúc cho feature/system dựa trên PRD/SRS/NFR.
+Output:
+1. Logical architecture diagram bằng Mermaid.
+2. Component responsibilities.
+3. API/data contract.
+4. Sequence diagram cho flow chính.
+5. Failure modes.
+6. Security boundary.
+7. Observability points.
+8. Architecture options.
+9. ADR đề xuất.
+10. Risk &amp; mitigation.
+
+Quy tắc:
+- Không chọn công nghệ mới nếu chưa có lý do.
+- Nêu trade-off rõ.
+- Ưu tiên simplicity, maintainability, testability.
+</code></pre>
+<h2 id="8-5-prompt-planning-agent"><a class="heading-anchor" href="#8-5-prompt-planning-agent" aria-label="Liên kết tới mục này">#</a>8.5. Prompt Planning Agent</h2>
+<pre><code class="language-markdown">Bạn là Planning Agent.
+
+Hãy chia feature thành task nhỏ, agent-ready.
+Mỗi task phải có:
+- Task ID.
+- Requirement ID.
+- Goal.
+- Files/modules dự kiến.
+- Acceptance criteria.
+- Test required.
+- Verification command.
+- Dependency.
+- Risk.
+- Estimate.
+
+Quy tắc:
+- Task phải nhỏ, review được.
+- Không tạo task “Implement all”.
+- Task nào thiếu input phải đánh dấu blocked.
+</code></pre>
+<h2 id="8-6-prompt-developer-agent"><a class="heading-anchor" href="#8-6-prompt-developer-agent" aria-label="Liên kết tới mục này">#</a>8.6. Prompt Developer Agent</h2>
+<pre><code class="language-markdown">Bạn là Developer Agent.
+
+Quy trình bắt buộc:
+1. Đọc task/PRD/SRS/ADR.
+2. Tóm tắt hiểu biết.
+3. Nêu assumption.
+4. Tạo plan.
+5. TDD nếu có logic.
+6. Code tối thiểu đúng scope.
+7. Chạy test/lint/typecheck.
+8. Self-review.
+9. Tạo PR summary.
+
+Không được:
+- Sửa file ngoài scope.
+- Thêm dependency tùy tiện.
+- Bỏ qua test fail.
+- Báo xong khi chưa verify.
+</code></pre>
+<h2 id="8-7-prompt-qa-agent"><a class="heading-anchor" href="#8-7-prompt-qa-agent" aria-label="Liên kết tới mục này">#</a>8.7. Prompt QA Agent</h2>
+<pre><code class="language-markdown">Bạn là QA Agent.
+
+Hãy tạo test plan từ PRD/SRS/UX/ADR.
+Output:
+1. Test strategy.
+2. Requirement-test matrix.
+3. Test cases Given‑When‑Then.
+4. Edge/error cases.
+5. Regression cases.
+6. Automation candidates.
+7. Test data.
+8. Environment needs.
+9. Sign-off checklist.
+
+Ưu tiên risk-based testing.
+</code></pre>
+<h2 id="8-8-prompt-code-review-agent"><a class="heading-anchor" href="#8-8-prompt-code-review-agent" aria-label="Liên kết tới mục này">#</a>8.8. Prompt Code Review Agent</h2>
+<pre><code class="language-markdown">Bạn là Code Review Agent.
+
+Review PR theo các góc:
+- Requirement compliance.
+- Architecture compliance.
+- Test coverage.
+- Security.
+- Performance.
+- Maintainability.
+- Error handling.
+- Observability.
+- Documentation.
+- Scope control.
+
+Output:
+1. Summary.
+2. Blocking issues.
+3. Non-blocking suggestions.
+4. Risk level.
+5. Merge recommendation.
+</code></pre>
+<h2 id="8-9-prompt-sre-release-agent"><a class="heading-anchor" href="#8-9-prompt-sre-release-agent" aria-label="Liên kết tới mục này">#</a>8.9. Prompt SRE/Release Agent</h2>
+<pre><code class="language-markdown">Bạn là SRE/Release Agent.
+
+Hãy chuẩn bị release checklist:
+- Version/scope.
+- Deployment plan.
+- Rollback plan.
+- Monitoring dashboard.
+- Alerts.
+- Smoke tests.
+- On-call owner.
+- Known issues.
+- Communication plan.
+
+Không cho release nếu thiếu rollback hoặc monitoring cho critical path.
+</code></pre>
+<hr>
+<h1 id="9-template-thu-muc-tai-lieu-chuan"><a class="heading-anchor" href="#9-template-thu-muc-tai-lieu-chuan" aria-label="Liên kết tới mục này">#</a>9. Template thư mục tài liệu chuẩn</h1>
+<pre><code class="language-text">docs/
+  00_governance/
+    engineering_constitution.md
+    ai_agent_policy.md
+    quality_gate_matrix.md
+    definition_of_ready_done.md
+  01_intake/
+    problem_brief_template.md
+  02_prd/
+    PRD-&lt;feature&gt;.md
+  03_srs/
+    SRS-&lt;feature&gt;.md
+  04_ux/
+    UX-&lt;feature&gt;-flow.md
+    state_matrix.md
+  05_architecture/
+    architecture_overview.md
+    adr/
+      ADR-001-&lt;decision&gt;.md
+  06_plan/
+    WBS-&lt;feature&gt;.md
+    risk_register.md
+  07_tasks/
+    TASK-&lt;feature&gt;-001.md
+  08_test/
+    test_strategy.md
+    test_matrix.md
+    regression_suite.md
+  09_release/
+    release_plan.md
+    release_notes.md
+  10_operations/
+    runbook.md
+    incident_response.md
+  11_learning/
+    retrospective.md
+    lessons_learned.md
+</code></pre>
+<hr>
+<h1 id="10-dashboard-quan-tri"><a class="heading-anchor" href="#10-dashboard-quan-tri" aria-label="Liên kết tới mục này">#</a>10. Dashboard quản trị</h1>
+<h2 id="10-1-metrics-theo-flow"><a class="heading-anchor" href="#10-1-metrics-theo-flow" aria-label="Liên kết tới mục này">#</a>10.1. Metrics theo flow</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Nhóm</th>
+<th>Metric</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Speed</td>
+<td>Lead time</td>
+<td>Từ idea đến release</td>
+</tr>
+<tr>
+<td>Speed</td>
+<td>Cycle time</td>
+<td>Từ task start đến merge</td>
+</tr>
+<tr>
+<td>Quality</td>
+<td>Defect escape rate</td>
+<td>Lỗi lọt sang beta/production</td>
+</tr>
+<tr>
+<td>Quality</td>
+<td>Change failure rate</td>
+<td>Release gây incident/rollback</td>
+</tr>
+<tr>
+<td>Quality</td>
+<td>Regression pass rate</td>
+<td>Độ ổn định</td>
+</tr>
+<tr>
+<td>AI Productivity</td>
+<td>Agent PR success rate</td>
+<td>PR của agent được merge</td>
+</tr>
+<tr>
+<td>AI Productivity</td>
+<td>Agent rework rate</td>
+<td>Tỷ lệ PR agent phải sửa nhiều</td>
+</tr>
+<tr>
+<td>AI Quality</td>
+<td>Test evidence completeness</td>
+<td>Agent có chạy/ghi test đầy đủ</td>
+</tr>
+<tr>
+<td>Planning</td>
+<td>Requirement ambiguity rate</td>
+<td>Số clarification sau khi dev bắt đầu</td>
+</tr>
+<tr>
+<td>Process</td>
+<td>Gate bypass count</td>
+<td>Số lần bỏ qua gate</td>
+</tr>
+<tr>
+<td>Ops</td>
+<td>MTTR</td>
+<td>Thời gian khôi phục sự cố</td>
+</tr>
+<tr>
+<td>Ops</td>
+<td>Alert precision</td>
+<td>Alert đúng/sai</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="10-2-dashboard-mermaid"><a class="heading-anchor" href="#10-2-dashboard-mermaid" aria-label="Liên kết tới mục này">#</a>10.2. Dashboard Mermaid</h2>
+<div class="mermaid">flowchart LR
+    A[&quot;Planning Quality&quot;] --&gt; B[&quot;Execution Speed&quot;]
+    B --&gt; C[&quot;Code Quality&quot;]
+    C --&gt; D[&quot;Release Safety&quot;]
+    D --&gt; E[&quot;Production Reliability&quot;]
+    E --&gt; F[&quot;Learning Velocity&quot;]
+    F --&gt; A
+
+    A1[&quot;Ambiguity Rate&quot;] --&gt; A
+    A2[&quot;DoR Pass Rate&quot;] --&gt; A
+    B1[&quot;Cycle Time&quot;] --&gt; B
+    B2[&quot;Agent Throughput&quot;] --&gt; B
+    C1[&quot;Review Findings&quot;] --&gt; C
+    C2[&quot;Test Coverage&quot;] --&gt; C
+    D1[&quot;Change Failure Rate&quot;] --&gt; D
+    D2[&quot;Rollback Readiness&quot;] --&gt; D
+    E1[&quot;MTTR&quot;] --&gt; E
+    E2[&quot;Error Budget&quot;] --&gt; E
+    F1[&quot;Postmortem Action Closure&quot;] --&gt; F
+</div>
+<hr>
+<h1 id="11-anti-pattern-can-tranh"><a class="heading-anchor" href="#11-anti-pattern-can-tranh" aria-label="Liên kết tới mục này">#</a>11. Anti‑pattern cần tránh</h1>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Anti-pattern</th>
+<th>Dấu hiệu</th>
+<th>Cách sửa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Vibe coding</td>
+<td>Nói ý tưởng rồi để AI code ngay</td>
+<td>Bắt buộc PRD/SRS/task</td>
+</tr>
+<tr>
+<td>Spec giả</td>
+<td>Có tài liệu nhưng không testable</td>
+<td>Thêm AC Given‑When‑Then</td>
+</tr>
+<tr>
+<td>QA cuối kỳ</td>
+<td>Gần release mới test</td>
+<td>QA tham gia từ SRS</td>
+</tr>
+<tr>
+<td>Big PR</td>
+<td>PR quá lớn, khó review</td>
+<td>Chia task nhỏ</td>
+</tr>
+<tr>
+<td>Agent tự quyết kiến trúc</td>
+<td>AI thêm lib/pattern lớn</td>
+<td>ADR approval</td>
+</tr>
+<tr>
+<td>Báo xong không bằng chứng</td>
+<td>“Done” nhưng không có log/test</td>
+<td>Evidence log bắt buộc</td>
+</tr>
+<tr>
+<td>Scope creep</td>
+<td>Đang code tự thêm feature</td>
+<td>Out-of-scope rõ</td>
+</tr>
+<tr>
+<td>Missing rollback</td>
+<td>Release lỗi không quay lại được</td>
+<td>Rollback plan trước deploy</td>
+</tr>
+<tr>
+<td>Missing observability</td>
+<td>Lỗi production không biết vì sao</td>
+<td>Log/metric/trace từ SRS</td>
+</tr>
+<tr>
+<td>Knowledge mất</td>
+<td>Xong project không cập nhật docs</td>
+<td>Retrospective + KB gate</td>
+</tr>
+</tbody>
+</table></div>
+<hr>
+<h1 id="12-ap-dung-nhanh-trong-30-ngay"><a class="heading-anchor" href="#12-ap-dung-nhanh-trong-30-ngay" aria-label="Liên kết tới mục này">#</a>12. Áp dụng nhanh trong 30 ngày</h1>
+<h2 id="tuan-1-chuan-hoa-nen-tang"><a class="heading-anchor" href="#tuan-1-chuan-hoa-nen-tang" aria-label="Liên kết tới mục này">#</a>Tuần 1 — Chuẩn hóa nền tảng</h2>
+<ul>
+<li><input class="task-check" type="checkbox" disabled> Tạo Engineering Constitution.</li>
+<li><input class="task-check" type="checkbox" disabled> Tạo AGENTS.md.</li>
+<li><input class="task-check" type="checkbox" disabled> Chuẩn hóa PRD/SRS/ADR/Test/Release templates.</li>
+<li><input class="task-check" type="checkbox" disabled> Bật branch protection.</li>
+<li><input class="task-check" type="checkbox" disabled> Chuẩn hóa PR template.</li>
+<li><input class="task-check" type="checkbox" disabled> Cài Superpowers cho coding agent.</li>
+<li><input class="task-check" type="checkbox" disabled> Chọn 1 repo pilot.</li>
+</ul>
+<h2 id="tuan-2-pilot-1-feature-nho"><a class="heading-anchor" href="#tuan-2-pilot-1-feature-nho" aria-label="Liên kết tới mục này">#</a>Tuần 2 — Pilot 1 feature nhỏ</h2>
+<ul>
+<li><input class="task-check" type="checkbox" disabled> Chọn feature nhỏ nhưng có business value.</li>
+<li><input class="task-check" type="checkbox" disabled> Viết PRD/SRS/AC.</li>
+<li><input class="task-check" type="checkbox" disabled> Dùng AI Agent tạo task breakdown.</li>
+<li><input class="task-check" type="checkbox" disabled> Dùng Superpowers triển khai branch.</li>
+<li><input class="task-check" type="checkbox" disabled> Bắt buộc TDD cho logic.</li>
+<li><input class="task-check" type="checkbox" disabled> Review/merge theo gate.</li>
+</ul>
+<h2 id="tuan-3-mo-rong-qa-ci-cd"><a class="heading-anchor" href="#tuan-3-mo-rong-qa-ci-cd" aria-label="Liên kết tới mục này">#</a>Tuần 3 — Mở rộng QA/CI/CD</h2>
+<ul>
+<li><input class="task-check" type="checkbox" disabled> Thêm test matrix.</li>
+<li><input class="task-check" type="checkbox" disabled> Tự động hóa smoke/regression.</li>
+<li><input class="task-check" type="checkbox" disabled> Thêm security scan.</li>
+<li><input class="task-check" type="checkbox" disabled> Thêm release checklist.</li>
+<li><input class="task-check" type="checkbox" disabled> Thêm monitoring basic.</li>
+<li><input class="task-check" type="checkbox" disabled> Đo cycle time và rework.</li>
+</ul>
+<h2 id="tuan-4-institutionalize"><a class="heading-anchor" href="#tuan-4-institutionalize" aria-label="Liên kết tới mục này">#</a>Tuần 4 — Institutionalize</h2>
+<ul>
+<li><input class="task-check" type="checkbox" disabled> Retro pilot.</li>
+<li><input class="task-check" type="checkbox" disabled> Cập nhật template/prompt.</li>
+<li><input class="task-check" type="checkbox" disabled> Tạo dashboard metrics.</li>
+<li><input class="task-check" type="checkbox" disabled> Train PM/BA/UX/Dev/QA.</li>
+<li><input class="task-check" type="checkbox" disabled> Chọn 2–3 feature tiếp theo.</li>
+<li><input class="task-check" type="checkbox" disabled> Định nghĩa agent permission L1/L2/L3.</li>
+<li><input class="task-check" type="checkbox" disabled> Thiết lập weekly process review.</li>
+</ul>
+<hr>
+<h1 id="13-mau-one-page-operating-rule-cho-team"><a class="heading-anchor" href="#13-mau-one-page-operating-rule-cho-team" aria-label="Liên kết tới mục này">#</a>13. Mẫu “one-page operating rule” cho team</h1>
+<pre><code class="language-markdown"># AI-Native Development Rule
+
+## Chúng ta làm theo 7 luật
+
+1. Spec trước, code sau.
+2. Requirement phải test được.
+3. Task nhỏ, có owner, có output.
+4. AI Agent được dùng mạnh, nhưng phải có guardrail.
+5. TDD cho logic quan trọng.
+6. Merge dựa trên evidence, không dựa trên niềm tin.
+7. Release phải có monitoring và rollback.
+
+## Không được làm
+
+- Không code từ yêu cầu nói miệng.
+- Không merge khi CI fail.
+- Không release khi thiếu rollback.
+- Không để AI tự thay đổi kiến trúc lớn.
+- Không báo done nếu chưa verify.
+- Không đóng bug nếu chưa có regression test hoặc lý do rõ.
+</code></pre>
+<hr>
+<h1 id="14-quy-trinh-xu-ly-thay-doi-scope"><a class="heading-anchor" href="#14-quy-trinh-xu-ly-thay-doi-scope" aria-label="Liên kết tới mục này">#</a>14. Quy trình xử lý thay đổi scope</h1>
+<div class="mermaid">flowchart TB
+    Change[&quot;Change Request&quot;] --&gt; Impact[&quot;Impact Analysis&quot;]
+    Impact --&gt; Type{&quot;Loại thay đổi&quot;}
+    Type --&gt;|Minor| UpdateTask[&quot;Update task&quot;]
+    Type --&gt;|Medium| UpdateSRS[&quot;Update SRS/UX/Test&quot;]
+    Type --&gt;|Major| UpdatePRD[&quot;Update PRD/Plan/Timeline&quot;]
+    UpdateTask --&gt; Approve1[&quot;PM/Tech approve&quot;]
+    UpdateSRS --&gt; Approve2[&quot;PM/BA/QA/Tech approve&quot;]
+    UpdatePRD --&gt; Approve3[&quot;Sponsor approve&quot;]
+    Approve1 --&gt; Trace[&quot;Update traceability&quot;]
+    Approve2 --&gt; Trace
+    Approve3 --&gt; Trace
+    Trace --&gt; Communicate[&quot;Communicate to team&quot;]
+</div>
+<h2 id="checklist-change-request"><a class="heading-anchor" href="#checklist-change-request" aria-label="Liên kết tới mục này">#</a>Checklist change request</h2>
+<ul>
+<li><input class="task-check" type="checkbox" disabled> Thay đổi đến từ ai?</li>
+<li><input class="task-check" type="checkbox" disabled> Lý do thay đổi?</li>
+<li><input class="task-check" type="checkbox" disabled> Ảnh hưởng user/business?</li>
+<li><input class="task-check" type="checkbox" disabled> Ảnh hưởng scope/timeline/cost?</li>
+<li><input class="task-check" type="checkbox" disabled> Ảnh hưởng architecture?</li>
+<li><input class="task-check" type="checkbox" disabled> Ảnh hưởng QA/test?</li>
+<li><input class="task-check" type="checkbox" disabled> Ảnh hưởng release?</li>
+<li><input class="task-check" type="checkbox" disabled> Có cần sponsor approve không?</li>
+<li><input class="task-check" type="checkbox" disabled> Đã cập nhật PRD/SRS/task/test chưa?</li>
+<li><input class="task-check" type="checkbox" disabled> Đã thông báo team chưa?</li>
+</ul>
+<hr>
+<h1 id="15-quy-trinh-bug-hotfix"><a class="heading-anchor" href="#15-quy-trinh-bug-hotfix" aria-label="Liên kết tới mục này">#</a>15. Quy trình bug/hotfix</h1>
+<div class="mermaid">flowchart LR
+    Bug[&quot;Bug Report&quot;] --&gt; Sev[&quot;Severity&quot;]
+    Sev --&gt; Repro[&quot;Reproduce&quot;]
+    Repro --&gt; RCA[&quot;Root Cause&quot;]
+    RCA --&gt; Test[&quot;Write Regression Test&quot;]
+    Test --&gt; Fix[&quot;Fix&quot;]
+    Fix --&gt; Verify[&quot;Verify&quot;]
+    Verify --&gt; PR[&quot;Hotfix PR&quot;]
+    PR --&gt; Deploy[&quot;Deploy&quot;]
+    Deploy --&gt; Monitor[&quot;Monitor&quot;]
+    Monitor --&gt; Post[&quot;Postmortem nếu SEV0/1&quot;]
+</div>
+<h2 id="hotfix-checklist"><a class="heading-anchor" href="#hotfix-checklist" aria-label="Liên kết tới mục này">#</a>Hotfix checklist</h2>
+<ul>
+<li><input class="task-check" type="checkbox" disabled> Bug có severity.</li>
+<li><input class="task-check" type="checkbox" disabled> Có repro step.</li>
+<li><input class="task-check" type="checkbox" disabled> Có evidence/log/trace.</li>
+<li><input class="task-check" type="checkbox" disabled> Có owner.</li>
+<li><input class="task-check" type="checkbox" disabled> Có regression test hoặc lý do chưa thể có.</li>
+<li><input class="task-check" type="checkbox" disabled> Fix nhỏ nhất có thể.</li>
+<li><input class="task-check" type="checkbox" disabled> Code review nhanh nhưng không bỏ qua.</li>
+<li><input class="task-check" type="checkbox" disabled> CI/smoke pass.</li>
+<li><input class="task-check" type="checkbox" disabled> Rollback rõ.</li>
+<li><input class="task-check" type="checkbox" disabled> Monitoring sau deploy.</li>
+<li><input class="task-check" type="checkbox" disabled> Postmortem nếu critical.</li>
+</ul>
+<hr>
+<h1 id="16-quy-trinh-danh-rieng-cho-feature-co-ai-llm-voice-agent"><a class="heading-anchor" href="#16-quy-trinh-danh-rieng-cho-feature-co-ai-llm-voice-agent" aria-label="Liên kết tới mục này">#</a>16. Quy trình dành riêng cho feature có AI/LLM/Voice/Agent</h1>
+<h2 id="16-1-diem-khac-biet"><a class="heading-anchor" href="#16-1-diem-khac-biet" aria-label="Liên kết tới mục này">#</a>16.1. Điểm khác biệt</h2>
+<p>Feature AI không chỉ test bằng unit/e2e thông thường. Cần thêm:</p>
+<ul>
+<li>Eval dataset.</li>
+<li>Scenario set.</li>
+<li>Golden answers.</li>
+<li>Latency p50/p95.</li>
+<li>Hallucination rate.</li>
+<li>Tool-call accuracy.</li>
+<li>Safety/permission accuracy.</li>
+<li>Regression prompt/model.</li>
+<li>Human rating nếu cần.</li>
+</ul>
+<h2 id="16-2-ai-eval-pipeline"><a class="heading-anchor" href="#16-2-ai-eval-pipeline" aria-label="Liên kết tới mục này">#</a>16.2. AI Eval pipeline</h2>
+<div class="mermaid">flowchart TB
+    Scenario[&quot;Scenario Dataset&quot;] --&gt; Run[&quot;Run Model/Agent&quot;]
+    Run --&gt; Judge[&quot;Automatic Judge&quot;]
+    Run --&gt; Human[&quot;Human Review Sample&quot;]
+    Judge --&gt; Metrics[&quot;Metrics&quot;]
+    Human --&gt; Metrics
+    Metrics --&gt; Compare[&quot;Compare Baseline&quot;]
+    Compare --&gt; Gate{&quot;Eval Gate&quot;}
+    Gate --&gt;|Pass| Release[&quot;Release&quot;]
+    Gate --&gt;|Fail| Improve[&quot;Prompt/Data/Model/Fix&quot;]
+    Improve --&gt; Run
+</div>
+<h2 id="16-3-ai-feature-checklist"><a class="heading-anchor" href="#16-3-ai-feature-checklist" aria-label="Liên kết tới mục này">#</a>16.3. AI feature checklist</h2>
+<ul>
+<li><input class="task-check" type="checkbox" disabled> Có dataset test.</li>
+<li><input class="task-check" type="checkbox" disabled> Có scenario real-world.</li>
+<li><input class="task-check" type="checkbox" disabled> Có golden answer/tool call expected.</li>
+<li><input class="task-check" type="checkbox" disabled> Có metric accuracy.</li>
+<li><input class="task-check" type="checkbox" disabled> Có latency p50/p95.</li>
+<li><input class="task-check" type="checkbox" disabled> Có test noise/edge case nếu là voice.</li>
+<li><input class="task-check" type="checkbox" disabled> Có safety/permission test.</li>
+<li><input class="task-check" type="checkbox" disabled> Có regression baseline.</li>
+<li><input class="task-check" type="checkbox" disabled> Có log để debug.</li>
+<li><input class="task-check" type="checkbox" disabled> Có fallback behavior.</li>
+<li><input class="task-check" type="checkbox" disabled> Có human review sample.</li>
+<li><input class="task-check" type="checkbox" disabled> Có eval report trước release.</li>
+</ul>
+<hr>
+<h1 id="17-mau-tich-hop-lark-github-ai-agent"><a class="heading-anchor" href="#17-mau-tich-hop-lark-github-ai-agent" aria-label="Liên kết tới mục này">#</a>17. Mẫu tích hợp Lark + GitHub + AI Agent</h1>
+<h2 id="17-1-flow-de-xuat"><a class="heading-anchor" href="#17-1-flow-de-xuat" aria-label="Liên kết tới mục này">#</a>17.1. Flow đề xuất</h2>
+<div class="mermaid">flowchart LR
+    Lark[&quot;Lark Chat/Docs/Base&quot;] --&gt; Intake[&quot;Problem Brief / PRD&quot;]
+    Intake --&gt; GitHubIssue[&quot;GitHub Issue/Epic&quot;]
+    GitHubIssue --&gt; Spec[&quot;Repo docs PRD/SRS&quot;]
+    Spec --&gt; Agent[&quot;AI Agent + Superpowers&quot;]
+    Agent --&gt; Branch[&quot;Branch/Worktree&quot;]
+    Branch --&gt; PR[&quot;Pull Request&quot;]
+    PR --&gt; CI[&quot;CI/CD&quot;]
+    CI --&gt; Review[&quot;Review&quot;]
+    Review --&gt; Merge[&quot;Merge&quot;]
+    Merge --&gt; Release[&quot;Release&quot;]
+    Release --&gt; LarkUpdate[&quot;Lark Update / Release Notes&quot;]
+    Release --&gt; Monitor[&quot;Monitoring&quot;]
+    Monitor --&gt; LarkAlert[&quot;Lark Alert&quot;]
+</div>
+<h2 id="17-2-quy-tac-thong-bao-lark"><a class="heading-anchor" href="#17-2-quy-tac-thong-bao-lark" aria-label="Liên kết tới mục này">#</a>17.2. Quy tắc thông báo Lark</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Sự kiện</th>
+<th>Kênh</th>
+<th>Nội dung</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PRD ready</td>
+<td>Product channel</td>
+<td>Link PRD, summary, request review</td>
+</tr>
+<tr>
+<td>SRS ready</td>
+<td>Project channel</td>
+<td>Requirement/testability review</td>
+</tr>
+<tr>
+<td>Architecture decision</td>
+<td>Tech channel</td>
+<td>ADR summary, risk</td>
+</tr>
+<tr>
+<td>Sprint start</td>
+<td>Project channel</td>
+<td>Scope, owners, risks</td>
+</tr>
+<tr>
+<td>PR critical</td>
+<td>Dev channel</td>
+<td>Request review</td>
+</tr>
+<tr>
+<td>CI failed nhiều lần</td>
+<td>Dev channel</td>
+<td>Alert blocker</td>
+</tr>
+<tr>
+<td>Release candidate</td>
+<td>Release channel</td>
+<td>Scope, checklist</td>
+</tr>
+<tr>
+<td>Production incident</td>
+<td>Incident channel</td>
+<td>Severity, owner, timeline</td>
+</tr>
+<tr>
+<td>Postmortem</td>
+<td>Knowledge channel</td>
+<td>Lessons, actions</td>
+</tr>
+</tbody>
+</table></div>
+<hr>
+<h1 id="18-muc-truong-thanh-trien-khai"><a class="heading-anchor" href="#18-muc-truong-thanh-trien-khai" aria-label="Liên kết tới mục này">#</a>18. Mức trưởng thành triển khai</h1>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Level</th>
+<th>Đặc điểm</th>
+<th>Mục tiêu</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>L0 — Manual</td>
+<td>Làm bằng con người, docs rời rạc</td>
+<td>Chuẩn hóa template</td>
+</tr>
+<tr>
+<td>L1 — AI-assisted</td>
+<td>AI hỗ trợ viết docs/code nhưng chưa có gate mạnh</td>
+<td>Bắt buộc DoR/DoD</td>
+</tr>
+<tr>
+<td>L2 — Spec-driven</td>
+<td>PRD/SRS/task/test rõ, agent làm theo</td>
+<td>Giảm rework</td>
+</tr>
+<tr>
+<td>L3 — Agentic execution</td>
+<td>Agent tạo branch/PR/test, human review</td>
+<td>Tăng throughput</td>
+</tr>
+<tr>
+<td>L4 — Closed-loop quality</td>
+<td>CI/eval/monitoring tự phát hiện lỗi</td>
+<td>Giảm defect escape</td>
+</tr>
+<tr>
+<td>L5 — AI Software Factory</td>
+<td>Agent vận hành nhiều vòng lặp, con người chốt chiến lược/gate</td>
+<td>Tăng tốc x5–x10 có kiểm soát</td>
+</tr>
+</tbody>
+</table></div>
+<hr>
+<h1 id="19-checklist-tong-hop-dung-hang-ngay"><a class="heading-anchor" href="#19-checklist-tong-hop-dung-hang-ngay" aria-label="Liên kết tới mục này">#</a>19. Checklist tổng hợp dùng hằng ngày</h1>
+<h2 id="pm-po-daily-checklist"><a class="heading-anchor" href="#pm-po-daily-checklist" aria-label="Liên kết tới mục này">#</a>PM/PO daily checklist</h2>
+<ul>
+<li><input class="task-check" type="checkbox" disabled> Feature nào thiếu PRD/SRS?</li>
+<li><input class="task-check" type="checkbox" disabled> Scope có thay đổi không?</li>
+<li><input class="task-check" type="checkbox" disabled> Blocker nào cần quyết định?</li>
+<li><input class="task-check" type="checkbox" disabled> Metric thành công có rõ không?</li>
+<li><input class="task-check" type="checkbox" disabled> Stakeholder nào chưa aligned?</li>
+<li><input class="task-check" type="checkbox" disabled> Có issue nào risk cao?</li>
+</ul>
+<h2 id="tech-lead-daily-checklist"><a class="heading-anchor" href="#tech-lead-daily-checklist" aria-label="Liên kết tới mục này">#</a>Tech Lead daily checklist</h2>
+<ul>
+<li><input class="task-check" type="checkbox" disabled> Task nào chưa đủ ready?</li>
+<li><input class="task-check" type="checkbox" disabled> PR nào quá lớn?</li>
+<li><input class="task-check" type="checkbox" disabled> Agent có tự thêm kiến trúc/dependency không?</li>
+<li><input class="task-check" type="checkbox" disabled> CI có fail lặp lại không?</li>
+<li><input class="task-check" type="checkbox" disabled> Có technical debt mới không?</li>
+<li><input class="task-check" type="checkbox" disabled> Có cần ADR không?</li>
+</ul>
+<h2 id="qa-daily-checklist"><a class="heading-anchor" href="#qa-daily-checklist" aria-label="Liên kết tới mục này">#</a>QA daily checklist</h2>
+<ul>
+<li><input class="task-check" type="checkbox" disabled> Requirement nào chưa có test?</li>
+<li><input class="task-check" type="checkbox" disabled> Bug nào cần regression test?</li>
+<li><input class="task-check" type="checkbox" disabled> Critical path pass chưa?</li>
+<li><input class="task-check" type="checkbox" disabled> Beta feedback nào cần triage?</li>
+<li><input class="task-check" type="checkbox" disabled> Automation coverage tăng hay giảm?</li>
+</ul>
+<h2 id="ai-agent-daily-checklist"><a class="heading-anchor" href="#ai-agent-daily-checklist" aria-label="Liên kết tới mục này">#</a>AI Agent daily checklist</h2>
+<ul>
+<li><input class="task-check" type="checkbox" disabled> Đã đọc đúng context chưa?</li>
+<li><input class="task-check" type="checkbox" disabled> Có assumption nào chưa confirm?</li>
+<li><input class="task-check" type="checkbox" disabled> Có test trước khi code chưa?</li>
+<li><input class="task-check" type="checkbox" disabled> Có chạy verification chưa?</li>
+<li><input class="task-check" type="checkbox" disabled> Có evidence log chưa?</li>
+<li><input class="task-check" type="checkbox" disabled> Có PR summary rõ chưa?</li>
+</ul>
+<hr>
+<h1 id="20-bo-tieu-chuan-khong-thoa-hiep"><a class="heading-anchor" href="#20-bo-tieu-chuan-khong-thoa-hiep" aria-label="Liên kết tới mục này">#</a>20. Bộ tiêu chuẩn “không thỏa hiệp”</h1>
+<ol>
+<li><strong>Không có requirement ID → không tạo task.</strong></li>
+<li><strong>Không có acceptance criteria → không code.</strong></li>
+<li><strong>Không có test → không merge.</strong></li>
+<li><strong>Không có CI xanh → không merge.</strong></li>
+<li><strong>Không có rollback/monitoring → không release.</strong></li>
+<li><strong>Không có owner → không nhận việc.</strong></li>
+<li><strong>Không có evidence → không báo done.</strong></li>
+<li><strong>Không có ADR → không thay đổi kiến trúc lớn.</strong></li>
+<li><strong>Không có postmortem → không đóng incident nghiêm trọng.</strong></li>
+<li><strong>Không cập nhật knowledge base → không coi là hoàn tất dự án.</strong></li>
+</ol>
+<hr>
+<h1 id="21-phu-luc-a-mau-status-report-ngan-gon"><a class="heading-anchor" href="#21-phu-luc-a-mau-status-report-ngan-gon" aria-label="Liên kết tới mục này">#</a>21. Phụ lục A — Mẫu status report ngắn gọn</h1>
+<pre><code class="language-markdown"># Daily Project Status
+
+## Overall
+- Status: Green / Yellow / Red
+- Summary:
+
+## Progress
+- Done:
+- In progress:
+- Next:
+
+## Risks / Blockers
+| Item | Impact | Owner | Need decision |
+|---|---|---|---|
+
+## Quality
+- Open bugs:
+- Critical:
+- CI status:
+- Test status:
+
+## AI Agent
+- Tasks delegated:
+- PRs created:
+- PRs merged:
+- Issues/rework:
+
+## Decisions Needed
+-
+</code></pre>
+<hr>
+<h1 id="22-phu-luc-b-mau-risk-register"><a class="heading-anchor" href="#22-phu-luc-b-mau-risk-register" aria-label="Liên kết tới mục này">#</a>22. Phụ lục B — Mẫu risk register</h1>
+<pre><code class="language-markdown"># Risk Register
+
+| ID | Risk | Probability | Impact | Score | Owner | Mitigation | Status |
+|---|---|---:|---:|---:|---|---|---|
+| R1 | Requirement mơ hồ | 4 | 5 | 20 | BA | Review SRS gate | Open |
+| R2 | CI chưa đủ test | 3 | 5 | 15 | DevOps | Add smoke/regression | Open |
+| R3 | Agent sửa ngoài scope | 3 | 4 | 12 | Tech Lead | PR template + review | Watching |
+</code></pre>
+<hr>
+<h1 id="23-phu-luc-c-mau-traceability-matrix"><a class="heading-anchor" href="#23-phu-luc-c-mau-traceability-matrix" aria-label="Liên kết tới mục này">#</a>23. Phụ lục C — Mẫu traceability matrix</h1>
+<pre><code class="language-markdown"># Traceability Matrix
+
+| Req ID | Acceptance Criteria | Test Case | Task | PR | Release | Status |
+|---|---|---|---|---|---|---|
+| FR-001 | AC-001 | TC-001 | TASK-001 | PR-123 | v1.2.0 | Done |
+| FR-002 | AC-002 | TC-002 | TASK-002 | PR-124 | v1.2.0 | Testing |
+</code></pre>
+<hr>
+<h1 id="24-phu-luc-d-mau-ai-agent-evidence-log"><a class="heading-anchor" href="#24-phu-luc-d-mau-ai-agent-evidence-log" aria-label="Liên kết tới mục này">#</a>24. Phụ lục D — Mẫu AI Agent evidence log</h1>
+<pre><code class="language-markdown"># AI Agent Evidence Log
+
+## Task
+- Task ID:
+- Agent:
+- Date:
+
+## Context Read
+- PRD:
+- SRS:
+- ADR:
+- UX:
+- Files:
+
+## Understanding
+-
+
+## Assumptions
+-
+
+## Changes
+| File | Change |
+|---|---|
+
+## Tests
+| Test | Result |
+|---|---|
+
+## Commands Run
+~~~bash
+~~~
+
+## Output
+-
+
+## Risks
+-
+
+## Human Review Needed
+-
+</code></pre>
+<hr>
+<h1 id="25-ket-luan"><a class="heading-anchor" href="#25-ket-luan" aria-label="Liên kết tới mục này">#</a>25. Kết luận</h1>
+<p>Quy trình phát triển phần mềm tốt nhất trong thời đại AI không phải là “để AI code càng nhanh càng tốt”. Quy trình tốt nhất là:</p>
+<blockquote>
+<p><strong>Spec rõ → task nhỏ → AI Agent thực thi có kỷ luật → test/eval tự động → review bằng chứng → release an toàn → học lại vào hệ thống.</strong></p>
+</blockquote>
+<p>AI Agent và Plugin Superpowers giúp tăng tốc rất mạnh, nhưng giá trị thật đến từ việc công ty xây được một <strong>Operating System phát triển phần mềm</strong> với:</p>
+<ul>
+<li>Source of truth rõ.</li>
+<li>Artifact chuẩn.</li>
+<li>Quality gate nghiêm.</li>
+<li>Traceability đầy đủ.</li>
+<li>Test/eval tự động.</li>
+<li>Human review đúng điểm.</li>
+<li>Agent có quyền hạn và trách nhiệm.</li>
+<li>Knowledge base liên tục tốt hơn.</li>
+</ul>
+<p>Khi làm đúng, đội ngũ không chỉ code nhanh hơn, mà còn <strong>ít rework hơn, ít lỗi production hơn, onboarding nhanh hơn, release tự tin hơn và tích lũy năng lực tổ chức tốt hơn qua từng dự án</strong>.</p>
+<hr>
+<h1 id="26-nguon-tham-khao-nen-doc-them"><a class="heading-anchor" href="#26-nguon-tham-khao-nen-doc-them" aria-label="Liên kết tới mục này">#</a>26. Nguồn tham khảo nên đọc thêm</h1>
+<p>Các nguồn dưới đây giúp đối chiếu và mở rộng tài liệu:</p>
+<ol>
+<li>GitHub Spec Kit — Spec‑Driven Development: https://github.com/github/spec-kit</li>
+<li>GitHub Spec Kit Documentation: https://github.github.com/spec-kit/</li>
+<li>Superpowers — Agentic skills framework &amp; software development methodology: https://github.com/obra/superpowers</li>
+<li>BMAD Method — AI‑driven agile development framework: https://github.com/bmad-code-org/BMAD-METHOD</li>
+<li>OpenAI Developers — Code generation and Codex: https://developers.openai.com/api/docs/guides/code-generation</li>
+<li>OpenAI Developers — Building an AI‑Native Engineering Team: https://developers.openai.com/codex/guides/build-ai-native-engineering-team</li>
+<li>OpenAI — Harness engineering: leveraging Codex in an agent‑first world: https://openai.com/index/harness-engineering/</li>
+</ol>
+<hr>
+<h2 id="27-phu-luc-e-checklist-in-nhanh"><a class="heading-anchor" href="#27-phu-luc-e-checklist-in-nhanh" aria-label="Liên kết tới mục này">#</a>27. Phụ lục E — Checklist in nhanh</h2>
+<h3 id="truoc-khi-code"><a class="heading-anchor" href="#truoc-khi-code" aria-label="Liên kết tới mục này">#</a>Trước khi code</h3>
+<ul>
+<li><input class="task-check" type="checkbox" disabled> PRD approved.</li>
+<li><input class="task-check" type="checkbox" disabled> SRS approved.</li>
+<li><input class="task-check" type="checkbox" disabled> AC testable.</li>
+<li><input class="task-check" type="checkbox" disabled> UX/state ready.</li>
+<li><input class="task-check" type="checkbox" disabled> ADR ready nếu cần.</li>
+<li><input class="task-check" type="checkbox" disabled> Task nhỏ.</li>
+<li><input class="task-check" type="checkbox" disabled> Test required.</li>
+<li><input class="task-check" type="checkbox" disabled> Agent context ready.</li>
+</ul>
+<h3 id="truoc-khi-merge"><a class="heading-anchor" href="#truoc-khi-merge" aria-label="Liên kết tới mục này">#</a>Trước khi merge</h3>
+<ul>
+<li><input class="task-check" type="checkbox" disabled> Requirement mapped.</li>
+<li><input class="task-check" type="checkbox" disabled> Test pass.</li>
+<li><input class="task-check" type="checkbox" disabled> CI pass.</li>
+<li><input class="task-check" type="checkbox" disabled> Review pass.</li>
+<li><input class="task-check" type="checkbox" disabled> Security pass nếu cần.</li>
+<li><input class="task-check" type="checkbox" disabled> Docs updated.</li>
+<li><input class="task-check" type="checkbox" disabled> Evidence log.</li>
+</ul>
+<h3 id="truoc-khi-release"><a class="heading-anchor" href="#truoc-khi-release" aria-label="Liên kết tới mục này">#</a>Trước khi release</h3>
+<ul>
+<li><input class="task-check" type="checkbox" disabled> QA sign-off.</li>
+<li><input class="task-check" type="checkbox" disabled> UAT/beta sign-off nếu cần.</li>
+<li><input class="task-check" type="checkbox" disabled> Release notes.</li>
+<li><input class="task-check" type="checkbox" disabled> Rollback plan.</li>
+<li><input class="task-check" type="checkbox" disabled> Monitoring.</li>
+<li><input class="task-check" type="checkbox" disabled> On-call owner.</li>
+<li><input class="task-check" type="checkbox" disabled> Known issues.</li>
+</ul>
+<h3 id="sau-release-2"><a class="heading-anchor" href="#sau-release-2" aria-label="Liên kết tới mục này">#</a>Sau release</h3>
+<ul>
+<li><input class="task-check" type="checkbox" disabled> Monitor metrics.</li>
+<li><input class="task-check" type="checkbox" disabled> Triage feedback.</li>
+<li><input class="task-check" type="checkbox" disabled> Fix critical.</li>
+<li><input class="task-check" type="checkbox" disabled> Postmortem nếu có incident.</li>
+<li><input class="task-check" type="checkbox" disabled> Update docs/prompts/tests.</li>
+<li><input class="task-check" type="checkbox" disabled> Retrospective.</li>
+</ul>
+<div class="empty-state" id="emptyState">Không tìm thấy nội dung phù hợp.</div></main></div>
+  <footer class="footer">Nguồn: quy_trinh_phat_trien_phan_mem_ai_agent_superpowers.md. Trang HTML độc lập, tối ưu cho GitHub Pages.</footer>
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({ startOnLoad: true, securityLevel: 'loose', theme: 'default', flowchart: { htmlLabels: true, curve: 'basis' }, sequence: { useMaxWidth: true } });
+    document.getElementById('expandDiagrams')?.addEventListener('click', async () => {
+      document.querySelectorAll('.mermaid[data-processed="true"]').forEach((el) => el.removeAttribute('data-processed'));
+      await mermaid.run({ nodes: document.querySelectorAll('.mermaid') });
+    });
+  </script>
+  <script>
+    const select = document.getElementById('tocSelect');
+    select?.addEventListener('change', (event) => { const value = event.target.value; if (value) window.location.hash = value; });
+    const search = document.getElementById('search');
+    const content = document.getElementById('content');
+    const empty = document.getElementById('emptyState');
+    const original = content.innerHTML;
+    search?.addEventListener('input', () => {
+      const query = search.value.trim().toLowerCase();
+      content.innerHTML = original;
+      if (!query) { empty.style.display = 'none'; return; }
+      const walker = document.createTreeWalker(content, NodeFilter.SHOW_TEXT, {
+        acceptNode(node) {
+          if (!node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+          if (node.parentElement.closest('script, style, pre, code, .mermaid')) return NodeFilter.FILTER_REJECT;
+          return NodeFilter.FILTER_ACCEPT;
+        }
+      });
+      const nodes = [];
+      while (walker.nextNode()) nodes.push(walker.currentNode);
+      let hits = 0;
+      nodes.forEach((node) => {
+        const text = node.nodeValue;
+        const index = text.toLowerCase().indexOf(query);
+        if (index < 0) return;
+        hits += 1;
+        const span = document.createElement('span');
+        span.append(document.createTextNode(text.slice(0, index)));
+        const mark = document.createElement('mark');
+        mark.className = 'search-hit';
+        mark.textContent = text.slice(index, index + query.length);
+        span.append(mark, document.createTextNode(text.slice(index + query.length)));
+        node.parentNode.replaceChild(span, node);
+      });
+      empty.style.display = hits ? 'none' : 'block';
+      document.querySelector('mark.search-hit')?.scrollIntoView({ block: 'center' });
+    });
+  </script>
+</body>
+</html>
